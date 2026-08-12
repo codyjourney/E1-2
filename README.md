@@ -121,6 +121,7 @@ python main.py
 ```text
 python-quiz-game/
 ├── main.py
+├── main2.py
 ├── state.json
 ├── README.md
 ├── .gitignore
