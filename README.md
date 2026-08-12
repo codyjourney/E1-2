@@ -124,12 +124,15 @@ python-quiz-game/
 ├── state.json
 ├── README.md
 ├── .gitignore
-└── docs/
-    └── screenshots/
-        ├── menu.png
-        ├── play.png
-        ├── add_quiz.png
-        └── score.png
+└── screenshots/
+    ├── git.png
+    ├── menu.png
+    ├── play.png
+    ├── play2.png
+    ├── play3.png
+    ├── add_quiz.png
+    └── score.png
+
 
 ## 7. 설명
 ## 클래스 및 메서드 설명
@@ -892,6 +895,27 @@ run()
 ```
 
 이 구조를 통해 **퀴즈 데이터 관리(`Quiz`)**, **파일 입출력(`Storage`)**, **게임 진행(`QuizGame`)**의 책임을 분리하고 객체 지향적인 구조로 프로그램을 구현했습니다.
+
+
+## Git
+```
+% git log --oneline --graph --all
+* a6a5fdb (HEAD -> main) Fix: 잘못된 입력과 JSON 파일 오류 처리
+* 0046818 Feat: state.json 데이터 저장 및 불러오기 구현
+* d452a7a Feat: 최고 점수 확인 및 갱신 기능 구현
+* 9d9c197 Feat: 등록된 퀴즈 목록 조회 기능 구현
+* 15fa49a Feat: 사용자 퀴즈 추가 기능 구현
+* ed41239 Feat: 등록된 퀴즈 목록 조회 기능 구현
+* e890cec Feat: 사용자 퀴즈 추가 기능 구현
+* bb7645f (origin/feature/play-quiz, feature/play-quiz) Feat: 퀴즈 랜덤 출제와 점수 계산 
+기능 추가
+* bebf084 Feat: 퀴즈 출제 및 정답 확인 기능 구현
+* 927164d Feat: 기본 퀴즈 데이터 추가
+* 0afe520 Feat: Quiz 클래스와 정답 확인 기능 구현
+* 462235b Feat: 메인 메뉴 및 종료 기능 구현
+* 484a4f0 (origin/main) Init: 퀴즈 게임 프로젝트 초기 설정
+* 107927e Chore: gitignore 설정
+```
 
 
 ## 참고
