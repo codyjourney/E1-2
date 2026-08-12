@@ -2,7 +2,7 @@ import json
 import random
 from pathlib import Path
 
-###########
+############
 class Quiz:
     """하나의 퀴즈 문제를 표현하는 클래스."""
 
