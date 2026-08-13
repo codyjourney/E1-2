@@ -120,7 +120,6 @@ python main.py
 ```text
 E1-2/
 ├── main.py
-├── main2.py
 ├── state.json
 ├── README.md
 ├── .gitignore
