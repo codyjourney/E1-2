@@ -118,7 +118,7 @@ python main.py
 ## 6. 파일 구조
 
 ```text
-python-quiz-game/
+E1-2/
 ├── main.py
 ├── main2.py
 ├── state.json
@@ -920,6 +920,3 @@ run()
 
 ## 참고
 https://chatgpt.com/share/6a7aed57-d258-83ea-8ed0-651915ea5410
-
-=======
->>>>>>> parent of 203d0fd (quiz menu)
