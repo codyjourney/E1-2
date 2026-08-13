@@ -131,7 +131,7 @@ E1-2/
     ├── play3.png
     ├── add_quiz.png
     └── score.png
-
+```
 
 ## 7. 설명
 ## 클래스 및 메서드 설명
