@@ -49,6 +49,7 @@ from pathlib import Path
 # 문자열로 파일 경로를 직접 다루는 것보다
 # Path를 사용하면 파일의 위치를 쉽게 관리할 수 있습니다.
 
+from datetime import datetime
 
 # ============================================================
 # 2. Quiz 클래스
@@ -221,27 +222,150 @@ class Storage:
     """
     퀴즈와 최고 점수를 JSON 파일에 저장하고 불러오는 클래스입니다.
 
-    이 클래스의 주요 책임은 파일 입출력입니다.
-
-    QuizGame이 직접 JSON 파일을 다루지 않고
-    Storage에게 저장과 불러오기를 맡기기 때문에
-    각 클래스의 역할이 분리됩니다.
+    백업 정책
+    ----------
+    1. state.json을 저장하기 전에 기존 파일을 state.json.bak으로 백업합니다.
+    2. 동시에 타임스탬프가 포함된 백업 파일도 생성합니다.
+       예: state.json.20260815_160300.bak
+    3. state.json이 손상된 경우 최신 백업 파일을 찾아 복원합니다.
     """
-
-    # --------------------------------------------------------
-    # Storage 객체 생성
-    # --------------------------------------------------------
 
     def __init__(self, file_path):
         """
         저장할 파일의 경로를 전달받습니다.
-
-        file_path
-            state.json 파일의 경로
         """
 
-        # 문자열 형태의 파일 경로를 Path 객체로 변환합니다.
         self.file_path = Path(file_path)
+
+        # 가장 최근 백업 파일
+        self.backup_file_path = self.file_path.with_suffix(
+            self.file_path.suffix + ".bak"
+        )
+
+    # --------------------------------------------------------
+    # JSON 파일 하나 읽기
+    # --------------------------------------------------------
+
+    def _load_file(self, file_path):
+        """
+        지정된 JSON 파일을 읽고 데이터 형식을 검증합니다.
+
+        문제가 있으면 예외를 발생시킵니다.
+        """
+
+        with file_path.open(
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+            data = json.load(file)
+
+        if not isinstance(data, dict):
+            raise ValueError(
+                "데이터 형식이 올바르지 않습니다."
+            )
+
+        if "quizzes" not in data or "best_score" not in data:
+            raise ValueError(
+                "필수 데이터가 없습니다."
+            )
+
+        if not isinstance(data["quizzes"], list):
+            raise ValueError(
+                "퀴즈 데이터가 올바르지 않습니다."
+            )
+
+        if not isinstance(data["best_score"], int):
+            raise ValueError(
+                "최고 점수 데이터가 올바르지 않습니다."
+            )
+
+        return data
+
+    # --------------------------------------------------------
+    # 백업 파일 목록 가져오기
+    # --------------------------------------------------------
+
+    def _get_backup_files(self):
+        """
+        state.json의 백업 파일을 최신 순서로 반환합니다.
+
+        예:
+            state.json.bak
+            state.json.20260815_160300.bak
+        """
+
+        backup_files = []
+
+        # 일반 백업 파일
+        if self.backup_file_path.exists():
+            backup_files.append(self.backup_file_path)
+
+        # 타임스탬프 백업 파일
+        timestamp_backups = self.file_path.parent.glob(
+            f"{self.file_path.name}.*.bak"
+        )
+
+        backup_files.extend(timestamp_backups)
+
+        # 수정 시간이 최신인 순서로 정렬합니다.
+        return sorted(
+            backup_files,
+            key=lambda path: path.stat().st_mtime,
+            reverse=True
+        )
+
+    # --------------------------------------------------------
+    # 백업을 이용한 복원
+    # --------------------------------------------------------
+
+    def _restore_from_backup(self):
+        """
+        최신 백업 파일부터 확인하여 정상적인 JSON을 찾습니다.
+
+        정상적인 백업을 찾으면 state.json으로 복원합니다.
+
+        반환값
+        ----------
+        dict
+            복원된 데이터
+
+        None
+            사용할 수 있는 백업이 없는 경우
+        """
+
+        backup_files = self._get_backup_files()
+
+        for backup_file in backup_files:
+
+            try:
+                # 백업 파일의 데이터가 정상인지 먼저 확인합니다.
+                data = self._load_file(backup_file)
+
+                # 정상적인 백업을 찾으면 state.json으로 복원합니다.
+                backup_file.replace(
+                    self.file_path
+                )
+
+                print(
+                    f"🔄 백업 파일을 이용해 데이터를 복원했습니다: "
+                    f"{backup_file.name}"
+                )
+
+                return data
+
+            except (
+                json.JSONDecodeError,
+                ValueError,
+                KeyError,
+                TypeError,
+                OSError
+            ):
+                # 백업 파일도 손상되었다면
+                # 다음 백업 파일을 확인합니다.
+                continue
+
+        return None
 
     # --------------------------------------------------------
     # JSON 파일 불러오기
@@ -251,72 +375,44 @@ class Storage:
         """
         state.json 파일을 읽어서 데이터를 반환합니다.
 
-        정상적인 경우:
-            JSON 데이터를 딕셔너리 형태로 반환합니다.
-
-        파일이 없는 경우:
-            None을 반환합니다.
-
-        파일이 손상된 경우:
-            None을 반환합니다.
-
-        파일을 읽는 과정에서 오류가 발생해도
-        프로그램 전체가 종료되지 않도록 예외 처리를 합니다.
+        state.json이 없거나 손상된 경우
+        백업 파일을 이용하여 복원을 시도합니다.
         """
 
-        try:
-            # state.json 파일을 읽기 모드("r")로 엽니다.
-            #
-            # encoding="utf-8"
-            # 한글 데이터가 깨지지 않도록 UTF-8 인코딩을 사용합니다.
-            with self.file_path.open(
-                "r",
-                encoding="utf-8"
-            ) as file:
-
-                # JSON 파일의 내용을 Python 객체로 변환합니다.
-                data = json.load(file)
-
-            # JSON의 최상위 데이터가 딕셔너리인지 확인합니다.
-            if not isinstance(data, dict):
-                raise ValueError(
-                    "데이터 형식이 올바르지 않습니다."
-                )
-
-            # 프로그램에서 반드시 필요한
-            # quizzes와 best_score가 존재하는지 확인합니다.
-            if "quizzes" not in data or "best_score" not in data:
-                raise ValueError(
-                    "필수 데이터가 없습니다."
-                )
-
-            # quizzes는 리스트 형태여야 합니다.
-            if not isinstance(data["quizzes"], list):
-                raise ValueError(
-                    "퀴즈 데이터가 올바르지 않습니다."
-                )
-
-            # best_score는 정수 형태여야 합니다.
-            if not isinstance(data["best_score"], int):
-                raise ValueError(
-                    "최고 점수 데이터가 올바르지 않습니다."
-                )
-
-            # 모든 검증을 통과하면 데이터를 반환합니다.
-            return data
-
         # ----------------------------------------------------
-        # 파일이 존재하지 않는 경우
+        # 원본 파일이 없는 경우
         # ----------------------------------------------------
 
-        except FileNotFoundError:
+        if not self.file_path.exists():
+
             print(
-                "📂 저장된 데이터가 없습니다. "
+                "📂 state.json이 없습니다. "
+                "백업 파일을 확인합니다."
+            )
+
+            restored_data = self._restore_from_backup()
+
+            if restored_data is not None:
+                return restored_data
+
+            print(
+                "📂 사용할 수 있는 백업도 없습니다. "
                 "기본 퀴즈를 사용합니다."
             )
 
-            # 파일이 없다는 것을 QuizGame에 알려줍니다.
             return None
+
+        # ----------------------------------------------------
+        # 원본 파일 읽기
+        # ----------------------------------------------------
+
+        try:
+
+            data = self._load_file(
+                self.file_path
+            )
+
+            return data
 
         # ----------------------------------------------------
         # JSON 파일이 손상된 경우
@@ -328,13 +424,25 @@ class Storage:
             KeyError,
             TypeError
         ):
+
             print(
-                "⚠️ state.json이 손상되었습니다. "
+                "⚠️ state.json이 손상되었습니다."
+            )
+
+            print(
+                "🔍 백업 파일을 이용한 복원을 시도합니다."
+            )
+
+            restored_data = self._restore_from_backup()
+
+            if restored_data is not None:
+                return restored_data
+
+            print(
+                "⚠️ 복원 가능한 백업이 없습니다. "
                 "기본 데이터로 초기화합니다."
             )
 
-            # 손상된 파일이므로 기본 데이터로 복구하도록
-            # None을 반환합니다.
             return None
 
         # ----------------------------------------------------
@@ -342,12 +450,86 @@ class Storage:
         # ----------------------------------------------------
 
         except OSError as error:
+
             print(
                 f"⚠️ 데이터 파일을 읽는 중 오류가 발생했습니다: "
                 f"{error}"
             )
 
+            print(
+                "🔍 백업 파일을 이용한 복원을 시도합니다."
+            )
+
+            restored_data = self._restore_from_backup()
+
+            if restored_data is not None:
+                return restored_data
+
             return None
+
+    # --------------------------------------------------------
+    # 기존 state.json 백업
+    # --------------------------------------------------------
+
+    def _backup_current_file(self):
+        """
+        기존 state.json을 저장하기 전에 백업합니다.
+
+        백업 파일
+        ----------
+        state.json.bak
+            가장 최근 백업
+
+        state.json.YYYYMMDD_HHMMSS.bak
+            타임스탬프가 포함된 백업
+        """
+
+        if not self.file_path.exists():
+            return
+
+        try:
+            # 가장 최근 백업 파일 생성
+            self.file_path.replace(
+                self.backup_file_path
+            )
+
+            # 방금 만든 백업을 다시 원래 위치로 복원합니다.
+            #
+            # replace()만 사용하면 원본이 사라지기 때문에
+            # shutil.copy2()를 사용합니다.
+            import shutil
+
+            shutil.copy2(
+                self.backup_file_path,
+                self.file_path
+            )
+
+            # 타임스탬프 백업 생성
+            timestamp = datetime.now().strftime(
+                "%Y%m%d_%H%M%S"
+            )
+
+            timestamp_backup = self.file_path.parent / (
+                f"{self.file_path.name}."
+                f"{timestamp}.bak"
+            )
+
+            shutil.copy2(
+                self.file_path,
+                timestamp_backup
+            )
+
+            print(
+                f"💾 기존 데이터를 백업했습니다: "
+                f"{timestamp_backup.name}"
+            )
+
+        except OSError as error:
+
+            print(
+                f"⚠️ 데이터 백업 중 오류가 발생했습니다: "
+                f"{error}"
+            )
 
     # --------------------------------------------------------
     # JSON 파일 저장
@@ -356,38 +538,62 @@ class Storage:
     def save(self, quizzes, best_score):
         """
         현재 퀴즈 목록과 최고 점수를 state.json에 저장합니다.
+
+        저장 전에 기존 state.json을 백업합니다.
         """
 
-        # JSON으로 저장할 데이터 구조를 만듭니다.
         data = {
-            # Quiz 객체는 JSON에 직접 저장할 수 없습니다.
-            #
-            # 따라서 각 Quiz 객체의 to_dict()를 호출하여
-            # 딕셔너리로 변환합니다.
             "quizzes": [
                 quiz.to_dict()
                 for quiz in quizzes
             ],
-
-            # 최고 점수도 함께 저장합니다.
             "best_score": best_score,
         }
 
         try:
-            # state.json을 쓰기 모드("w")로 엽니다.
+            # ------------------------------------------------
+            # 기존 파일 백업
+            # ------------------------------------------------
+
+            if self.file_path.exists():
+
+                import shutil
+
+                # state.json.bak 생성
+                shutil.copy2(
+                    self.file_path,
+                    self.backup_file_path
+                )
+
+                # 타임스탬프 백업 생성
+                timestamp = datetime.now().strftime(
+                    "%Y%m%d_%H%M%S"
+                )
+
+                timestamp_backup = self.file_path.parent / (
+                    f"{self.file_path.name}."
+                    f"{timestamp}.bak"
+                )
+
+                shutil.copy2(
+                    self.file_path,
+                    timestamp_backup
+                )
+
+                print(
+                    f"💾 백업 생성: "
+                    f"{timestamp_backup.name}"
+                )
+
+            # ------------------------------------------------
+            # 새로운 데이터 저장
+            # ------------------------------------------------
+
             with self.file_path.open(
                 "w",
                 encoding="utf-8"
             ) as file:
 
-                # Python 딕셔너리를 JSON 형식으로 저장합니다.
-                #
-                # ensure_ascii=False
-                # 한글을 \uXXXX 형태로 변환하지 않고
-                # 그대로 저장합니다.
-                #
-                # indent=4
-                # JSON 파일을 보기 좋게 들여쓰기합니다.
                 json.dump(
                     data,
                     file,
@@ -395,14 +601,12 @@ class Storage:
                     indent=4
                 )
 
-        # 파일 저장 중 오류가 발생해도
-        # 프로그램 전체가 종료되지 않도록 처리합니다.
         except OSError as error:
+
             print(
                 f"⚠️ 데이터를 저장하는 중 오류가 발생했습니다: "
                 f"{error}"
             )
-
 
 # ============================================================
 # 4. QuizGame 클래스

@@ -119,16 +119,6 @@
                 "3"
             ],
             "answer": 2
-        },
-        {
-            "question": "5",
-            "choices": [
-                "4",
-                "4",
-                "3",
-                "3"
-            ],
-            "answer": 4
         }
     ],
     "best_score": 40

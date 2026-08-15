@@ -99,36 +99,6 @@
                 "5"
             ],
             "answer": 3
-        },
-        {
-            "question": "2",
-            "choices": [
-                "4",
-                "3",
-                "3",
-                "1321"
-            ],
-            "answer": 2
-        },
-        {
-            "question": "1",
-            "choices": [
-                "2",
-                "2",
-                "3",
-                "3"
-            ],
-            "answer": 2
-        },
-        {
-            "question": "5",
-            "choices": [
-                "4",
-                "4",
-                "3",
-                "3"
-            ],
-            "answer": 4
         }
     ],
     "best_score": 40
