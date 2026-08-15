@@ -1139,3 +1139,10 @@ state.json.bak 확인
     ↓
 기본 데이터로 초기화
 ```
+
+
+### Git 10
+```text
+git rev-list --all --count
+38
+```
