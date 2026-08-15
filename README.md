@@ -916,6 +916,3 @@ run()
 * 107927e Chore: gitignore 설정
 ```
 
-
-## 참고
-https://chatgpt.com/share/6a7aed57-d258-83ea-8ed0-651915ea5410
