@@ -4552,3 +4552,1138 @@ state.json.bak 확인
 git rev-list --all --count
 38
 ```
+
+
+
+
+# Python 코드에 사용된 클래스, 메소드, 문법 및 명령어 설명
+
+이 문서는 Python 코드에 등장하는 주요 클래스, 메소드, 문법 및 명령어를 처음 Python을 배우는 사람도 이해할 수 있도록 쉽게 설명합니다.
+
+## 1\. `pathlib.Path`
+
+`pathlib.Path`는 ****파일이나 폴더의 경로를 다루기 위한 클래스****입니다.
+
+Python에서는 파일 경로를 문자열로 직접 다룰 수도 있습니다.
+
+file\_path = "data/state.json"  
+
+하지만 `pathlib.Path`를 사용하면 파일과 폴더를 훨씬 편리하게 다룰 수 있습니다.
+
+from pathlib import Path  
+  
+file\_path = Path("data/state.json")  
+
+이제 `file_path`는 단순한 문자열이 아니라 ****파일 경로를 다루는 Path 객체****가 됩니다.
+
+### 예시
+
+from pathlib import Path  
+  
+file\_path = Path("data/state.json")  
+  
+print(file\_path)  
+
+결과:
+
+data/state.json  
+
+### 폴더와 파일을 합치기
+
+data\_dir = Path("data")  
+file\_path = data\_dir / "state.json"  
+
+결과적으로:
+
+data/state.json  
+
+가 됩니다.
+
+`/` 연산자를 사용해서 경로를 연결할 수 있다는 것이 `Path`의 큰 장점입니다.
+
+문자열로 작성하면:
+
+file\_path = "data/" + "state.json"  
+
+처럼 작성해야 하지만, `Path`를 사용하면:
+
+file\_path = Path("data") / "state.json"  
+
+처럼 작성할 수 있습니다.
+
+### 자주 사용하는 `Path` 메소드
+
+#### `exists()`
+
+파일이나 폴더가 실제로 존재하는지 확인합니다.
+
+file\_path.exists()  
+
+존재하면:
+
+True  
+
+존재하지 않으면:
+
+False  
+
+를 반환합니다.
+
+#### `is_file()`
+
+해당 경로가 파일인지 확인합니다.
+
+file\_path.is\_file()  
+
+#### `is_dir()`
+
+해당 경로가 폴더인지 확인합니다.
+
+file\_path.is\_dir()  
+
+#### `mkdir()`
+
+폴더를 생성합니다.
+
+data\_dir.mkdir()  
+
+부모 폴더까지 함께 만들고 싶다면:
+
+data\_dir.mkdir(parents=True, exist\_ok=True)  
+
+-   `parents=True` : 필요한 상위 폴더도 함께 생성
+-   `exist_ok=True` : 이미 폴더가 있어도 오류를 발생시키지 않음
+
+# 2\. 리스트 컴프리헨션(List Comprehension)
+
+리스트 컴프리헨션은 ****반복문을 사용해서 새로운 리스트를 간단하게 만드는 Python 문법****입니다.
+
+일반적인 `for`문으로 작성하면:
+
+numbers = \[\]  
+  
+for i in range(5):  
+    numbers.append(i)  
+
+결과:
+
+\[0, 1, 2, 3, 4\]  
+
+리스트 컴프리헨션을 사용하면 훨씬 짧게 작성할 수 있습니다.
+
+numbers = \[i for i in range(5)\]  
+
+결과는 동일합니다.
+
+\[0, 1, 2, 3, 4\]  
+
+## 조건을 사용할 수도 있습니다.
+
+예를 들어 짝수만 가져오고 싶다면:
+
+numbers = \[i for i in range(10) if i % 2 == 0\]  
+
+결과:
+
+\[0, 2, 4, 6, 8\]  
+
+구조를 이해하면 다음과 같습니다.
+
+\[표현식 for 변수 in 반복할\_대상 if 조건\]  
+
+예:
+
+\[i for i in range(10) if i % 2 == 0\]  
+
+의 의미는:
+
+> `0`부터 `9`까지 반복하면서 짝수인 값만 리스트에 넣어라.
+
+입니다.
+
+# 3\. `lambda`
+
+`lambda`는 ****이름이 없는 간단한 함수를 한 줄로 만드는 문법****입니다.
+
+일반적인 함수를 만들면:
+
+def add(a, b):  
+    return a + b  
+
+`lambda`를 사용하면:
+
+add = lambda a, b: a + b  
+
+처럼 작성할 수 있습니다.
+
+두 코드 모두 다음과 같이 사용할 수 있습니다.
+
+print(add(10, 20))  
+
+결과:
+
+30  
+
+## `lambda`의 기본 구조
+
+lambda 매개변수: 반환할\_값  
+
+예:
+
+lambda x: x \* 2  
+
+의 의미는:
+
+> x를 전달받아서 x × 2를 반환하는 작은 함수
+
+입니다.
+
+## `sorted()`에서 사용하는 `lambda`
+
+다음 코드를 살펴보겠습니다.
+
+return sorted(  
+    backup\_files,  
+    key=lambda path: path.stat().st\_mtime,  
+    reverse=True  
+)  
+
+여기서:
+
+key=lambda path: path.stat().st\_mtime  
+
+는 각 파일의 ****수정 시간****을 기준으로 정렬하겠다는 의미입니다.
+
+즉:
+
+파일 A → 수정 시간 확인  
+파일 B → 수정 시간 확인  
+파일 C → 수정 시간 확인  
+...  
+
+한 후 수정 시간을 기준으로 정렬합니다.
+
+`reverse=True`이므로 큰 값부터 정렬합니다.
+
+따라서 결과적으로 ****가장 최근에 수정된 파일이 먼저 나오게 됩니다.****
+
+# 4\. `KeyboardInterrupt`
+
+`KeyboardInterrupt`는 사용자가 프로그램을 실행하는 도중 ****키보드로 강제 중단했을 때 발생하는 예외****입니다.
+
+일반적으로 터미널에서:
+
+Ctrl + C  
+
+를 누르면 발생합니다.
+
+예를 들어:
+
+while True:  
+    print("실행 중...")  
+
+이 프로그램은 계속 실행됩니다.
+
+사용자가 `Ctrl + C`를 누르면 Python은:
+
+KeyboardInterrupt  
+
+를 발생시킵니다.
+
+이를 `try-except`로 처리할 수도 있습니다.
+
+try:  
+    while True:  
+        print("실행 중...")  
+except KeyboardInterrupt:  
+    print("프로그램을 종료합니다.")  
+
+이렇게 하면 사용자가 `Ctrl + C`를 눌렀을 때 프로그램을 깔끔하게 종료할 수 있습니다.
+
+# 5\. `EOFError`
+
+`EOFError`는 주로 `input()`을 사용하고 있을 때 ****입력의 끝(EOF)을 만났을 경우 발생하는 예외****입니다.
+
+EOF는:
+
+End Of File  
+
+의 약자입니다.
+
+쉽게 말하면:
+
+> 더 이상 입력할 데이터가 없는데 프로그램이 입력을 기다리고 있는 상황
+
+이라고 이해하면 됩니다.
+
+예를 들어:
+
+try:  
+    value = input("입력하세요: ")  
+except EOFError:  
+    print("입력이 종료되었습니다.")  
+
+이런 방식으로 처리할 수 있습니다.
+
+특히 터미널에서 입력을 받는 프로그램이나, 파일/파이프 등을 통해 입력을 전달받는 프로그램에서 발생할 수 있습니다.
+
+# 6\. `datetime.now().strftime()`
+
+다음 코드를 살펴보겠습니다.
+
+timestamp = datetime.now().strftime(  
+    "%Y%m%d\_%H%M%S"  
+)  
+
+이 코드는 ****현재 날짜와 시간을 가져와서 원하는 형식의 문자열로 만드는 코드****입니다.
+
+먼저:
+
+datetime.now()  
+
+는 현재 날짜와 시간을 가져옵니다.
+
+예를 들어:
+
+2026-08-16 11:30:25.123456  
+
+와 같은 값이 될 수 있습니다.
+
+그 다음:
+
+.strftime(...)  
+
+를 사용하면 날짜와 시간의 표시 형식을 원하는 형태로 바꿀 수 있습니다.
+
+예:
+
+datetime.now().strftime("%Y%m%d\_%H%M%S")  
+
+결과:
+
+20260816\_113025  
+
+이런 형태의 문자열을 만들 수 있습니다.
+
+## 자주 사용하는 형식
+
+| 코드 | 의미     | 예    |
+| -- | ------ | ---- |
+| %Y | 4자리 연도 | 2026 |
+| %m | 2자리 월  | 08   |
+| %d | 2자리 일  | 16   |
+| %H | 시      | 11   |
+| %M | 분      | 30   |
+| %S | 초      | 25   |
+
+예를 들어:
+
+strftime("%Y-%m-%d %H:%M:%S")  
+
+결과:
+
+2026-08-16 11:30:25  
+
+이런 방식으로 백업 파일 이름에 날짜와 시간을 넣을 때 매우 유용합니다.
+
+예:
+
+backup\_20260816\_113025.json  
+
+# 7\. Python에서 `_`의 의미
+
+Python에서 `_`는 여러 가지 용도로 사용됩니다.
+
+특히 클래스나 메소드 이름 앞에 `_`가 붙는 경우가 중요합니다.
+
+예:
+
+def \_load\_state(self):  
+    ...  
+
+이 메소드 이름 앞의 `_`는 일반적으로:
+
+> 이 메소드는 클래스 내부에서 주로 사용하는 메소드입니다.
+
+라는 의도를 표현합니다.
+
+즉:
+
+\_load\_state  
+
+라고 이름을 지으면 다른 개발자에게:
+
+> 이 메소드는 외부에서 직접 사용하기보다는 클래스 내부에서 사용하는 것이 좋습니다.
+
+라는 의미를 전달합니다.
+
+### 중요한 점
+
+Python이 `_`가 붙은 메소드에 대한 접근을 ****강제로 막는 것은 아닙니다.****
+
+예를 들어:
+
+class Example:  
+    def \_hello(self):  
+        print("Hello")  
+
+다음과 같이 호출할 수도 있습니다.
+
+example = Example()  
+example.\_hello()  
+
+실제로 실행됩니다.
+
+따라서 `_`는:
+
+접근 금지  
+
+가 아니라:
+
+내부적으로 사용하는 메소드라는 개발자 간의 약속  
+
+에 가깝습니다.
+
+# 8\. `with`
+
+`with`는 파일이나 기타 자원을 사용할 때 ****사용이 끝난 후 자동으로 정리하도록 해주는 문법****입니다.
+
+파일을 직접 열고 닫으면:
+
+file = open("state.json", "r")  
+  
+data = file.read()  
+  
+file.close()  
+
+처럼 작성해야 합니다.
+
+하지만 `with`를 사용하면:
+
+with open("state.json", "r") as file:  
+    data = file.read()  
+
+처럼 작성할 수 있습니다.
+
+파일을 사용한 후 Python이 파일을 자동으로 닫아줍니다.
+
+## `Path.open()`과 함께 사용하는 경우
+
+다음과 같은 코드도 자주 사용합니다.
+
+with file\_path.open(  
+    "r",  
+    encoding="utf-8"  
+) as file:  
+    data = file.read()  
+
+여기서:
+
+file\_path.open()  
+
+은 해당 경로의 파일을 여는 메소드입니다.
+
+"r"  
+
+은 읽기 모드입니다.
+
+encoding="utf-8"  
+
+은 파일을 UTF-8 방식으로 읽겠다는 의미입니다.
+
+그리고:
+
+as file  
+
+을 통해 열린 파일을 `file`이라는 변수로 사용할 수 있습니다.
+
+# 9\. 파일을 닫지 않으면 어떻게 될까?
+
+파일을 열었다면 사용이 끝난 후 닫아주는 것이 중요합니다.
+
+file = open("state.json", "r")  
+  
+data = file.read()  
+  
+file.close()  
+
+파일을 닫지 않으면 다음과 같은 문제가 발생할 수 있습니다.
+
+-   사용하지 않는 파일 핸들이 계속 남을 수 있습니다.
+-   많은 파일을 열면 시스템의 파일 리소스를 소모할 수 있습니다.
+-   쓰기 작업의 경우 데이터가 제대로 저장되지 않는 문제가 발생할 수 있습니다.
+-   프로그램이 예상하지 못한 상태로 동작할 수 있습니다.
+
+따라서 가능하면 다음처럼 `with`를 사용하는 것이 좋습니다.
+
+with open("state.json", "r", encoding="utf-8") as file:  
+    data = file.read()  
+
+`with`를 사용하면 예외가 발생하더라도 파일을 정리하는 데 유리합니다.
+
+# 10\. `raise ValueError()`
+
+`raise`는 ****개발자가 직접 예외를 발생시키는 명령어****입니다.
+
+예를 들어:
+
+raise ValueError("잘못된 값입니다.")  
+
+라고 작성하면 Python이 의도적으로 `ValueError`를 발생시킵니다.
+
+## `ValueError`란?
+
+`ValueError`는 ****자료형 자체는 올바르지만 값이 잘못되었을 때 사용하는 예외****입니다.
+
+예:
+
+age = -10  
+  
+if age < 0:  
+    raise ValueError("나이는 0보다 작을 수 없습니다.")  
+
+여기서 `age`는 숫자이므로 자료형은 문제가 없습니다.
+
+하지만:
+
+\-10  
+
+이라는 값은 프로그램에서 허용하지 않으므로 `ValueError`를 발생시키는 것입니다.
+
+## `raise`를 사용하는 이유
+
+프로그램에서 문제가 발생했는데도 계속 실행하도록 놔두면 나중에 더 큰 문제가 발생할 수 있습니다.
+
+따라서:
+
+if not valid:  
+    raise ValueError("잘못된 데이터입니다.")  
+
+처럼 ****문제가 발생한 지점에서 즉시 알려주는 것****이 좋습니다.
+
+# 11\. `glob()`
+
+`glob()`은 특정 패턴에 맞는 ****파일들을 찾아주는 기능****입니다.
+
+`pathlib.Path`에서도 사용할 수 있습니다.
+
+예:
+
+backup\_files = list(data\_dir.glob("\*.json"))  
+
+여기서:
+
+\*.json  
+
+은:
+
+> 확장자가 `.json`인 모든 파일
+
+이라는 의미입니다.
+
+예를 들어 폴더에:
+
+state.json  
+backup.json  
+config.json  
+readme.txt  
+
+가 있다면:
+
+data\_dir.glob("\*.json")  
+
+은 다음 파일들을 찾습니다.
+
+state.json  
+backup.json  
+config.json  
+
+하지만:
+
+readme.txt  
+
+는 찾지 않습니다.
+
+## `*`의 의미
+
+`*`는 여러 문자를 의미합니다.
+
+\*.json  
+
+은:
+
+아무 이름.json  
+
+이라는 의미입니다.
+
+예:
+
+a.json  
+state.json  
+backup\_20260816.json  
+
+모두 해당합니다.
+
+# 12\. `append()`와 `extend()`의 차이
+
+둘 다 리스트에 데이터를 추가하는 메소드지만 ****추가하는 방식이 다릅니다.****
+
+## `append()`
+
+`append()`는 ****하나의 항목을 리스트의 마지막에 추가****합니다.
+
+numbers = \[1, 2, 3\]  
+  
+numbers.append(4)  
+
+결과:
+
+\[1, 2, 3, 4\]  
+
+리스트 자체를 추가할 수도 있습니다.
+
+numbers = \[1, 2, 3\]  
+  
+numbers.append(\[4, 5\])  
+
+결과:
+
+\[1, 2, 3, \[4, 5\]\]  
+
+즉, 리스트 `[4, 5]` 자체가 하나의 항목으로 추가됩니다.
+
+## `extend()`
+
+`extend()`는 다른 리스트의 ****각 항목을 하나씩 꺼내서 추가****합니다.
+
+numbers = \[1, 2, 3\]  
+  
+numbers.extend(\[4, 5\])  
+
+결과:
+
+\[1, 2, 3, 4, 5\]  
+
+### 비교
+
+numbers = \[1, 2, 3\]  
+  
+numbers.append(\[4, 5\])  
+
+결과:
+
+\[1, 2, 3, \[4, 5\]\]  
+
+반면:
+
+numbers = \[1, 2, 3\]  
+  
+numbers.extend(\[4, 5\])  
+
+결과:
+
+\[1, 2, 3, 4, 5\]  
+
+### 쉽게 기억하기
+
+append  → 리스트 안에 하나 추가  
+extend  → 리스트의 내용을 펼쳐서 추가  
+
+# 13\. `sorted()`
+
+`sorted()`는 데이터를 ****정렬해서 새로운 리스트로 반환하는 Python 내장 함수****입니다.
+
+예:
+
+numbers = \[3, 1, 5, 2\]  
+  
+result = sorted(numbers)  
+
+결과:
+
+\[1, 2, 3, 5\]  
+
+원래 리스트는 그대로 유지됩니다.
+
+numbers = \[3, 1, 5, 2\]  
+  
+result = sorted(numbers)  
+  
+print(numbers)  
+print(result)  
+
+결과:
+
+\[3, 1, 5, 2\]  
+\[1, 2, 3, 5\]  
+
+# 14\. `sorted()`의 `key`
+
+`sorted()`에서 `key`를 사용하면 ****무엇을 기준으로 정렬할지 지정할 수 있습니다.****
+
+예:
+
+sorted(  
+    backup\_files,  
+    key=lambda path: path.stat().st\_mtime  
+)  
+
+여기서는 파일 자체를 직접 비교하는 것이 아니라:
+
+path.stat().st\_mtime  
+
+값을 기준으로 정렬합니다.
+
+즉:
+
+파일 → 수정 시간 가져오기 → 수정 시간을 기준으로 정렬  
+
+이라는 과정입니다.
+
+# 15\. `path.stat()`
+
+`Path` 객체에서:
+
+path.stat()  
+
+을 호출하면 해당 파일의 \*\*파일 정보(metadata)\*\*를 가져옵니다.
+
+예를 들어 파일 크기나 수정 시간 등의 정보를 확인할 수 있습니다.
+
+info = path.stat()  
+
+그 결과에서:
+
+info.st\_size  
+
+는 파일 크기를 의미합니다.
+
+그리고:
+
+info.st\_mtime  
+
+는 파일이 마지막으로 수정된 시간을 나타냅니다.
+
+# 16\. `st_mtime`
+
+`st_mtime`은 ****파일이 마지막으로 수정된 시각****을 나타냅니다.
+
+예:
+
+path.stat().st\_mtime  
+
+이 값을 사용하면 여러 파일을:
+
+가장 오래된 파일  
+↓  
+...  
+↓  
+가장 최근에 수정된 파일  
+
+순서로 정렬할 수 있습니다.
+
+# 17\. `reverse=True`
+
+`sorted()`는 기본적으로 오름차순으로 정렬합니다.
+
+sorted(\[3, 1, 2\])  
+
+결과:
+
+\[1, 2, 3\]  
+
+반대로 큰 값부터 정렬하고 싶다면:
+
+sorted(\[3, 1, 2\], reverse=True)  
+
+결과:
+
+\[3, 2, 1\]  
+
+따라서:
+
+return sorted(  
+    backup\_files,  
+    key=lambda path: path.stat().st\_mtime,  
+    reverse=True  
+)  
+
+는:
+
+> 백업 파일들을 마지막 수정 시간을 기준으로 정렬하되, 가장 최근 파일부터 반환한다.
+
+라는 의미입니다.
+
+# 18\. `json.dump()`
+
+`json.dump()`는 ****Python 데이터를 JSON 형식으로 파일에 저장할 때 사용하는 함수****입니다.
+
+예:
+
+json.dump(  
+    data,  
+    file,  
+    ensure\_ascii=False,  
+    indent=4  
+)  
+
+여기서 각각의 의미는 다음과 같습니다.
+
+## `data`
+
+저장할 Python 데이터입니다.
+
+예:
+
+data = {  
+    "name": "홍길동",  
+    "age": 20  
+}  
+
+## `file`
+
+JSON을 저장할 파일 객체입니다.
+
+예:
+
+with open("state.json", "w", encoding="utf-8") as file:  
+    json.dump(data, file)  
+
+## `ensure_ascii=False`
+
+한글과 같은 Unicode 문자를 그대로 저장하기 위한 옵션입니다.
+
+ensure\_ascii=False  
+
+를 사용하면:
+
+{  
+    "name": "홍길동"  
+}  
+
+처럼 한글을 그대로 저장할 수 있습니다.
+
+반대로 설정하지 않으면 Unicode 문자가 escape 형태로 저장될 수 있습니다.
+
+## `indent=4`
+
+JSON 파일을 보기 좋게 들여쓰기합니다.
+
+indent=4  
+
+를 사용하면:
+
+{  
+    "name": "홍길동",  
+    "age": 20  
+}  
+
+처럼 사람이 읽기 편하게 저장됩니다.
+
+# 19\. `shutil.copy2()`
+
+`shutil.copy2()`는 ****파일을 다른 위치로 복사하는 함수****입니다.
+
+예:
+
+shutil.copy2(  
+    source,  
+    destination  
+)  
+
+의 의미는:
+
+> source 파일을 destination 위치로 복사해라.
+
+입니다.
+
+예:
+
+import shutil  
+  
+shutil.copy2(  
+    "state.json",  
+    "backup/state.json"  
+)  
+
+이렇게 하면:
+
+state.json  
+
+파일을:
+
+backup/state.json  
+
+으로 복사합니다.
+
+## `copy()`와 `copy2()`의 차이
+
+둘 다 파일을 복사하지만 `copy2()`는 파일의 ****메타데이터도 가능한 범위에서 함께 보존****합니다.
+
+따라서 백업 프로그램에서는 `copy2()`가 유용할 수 있습니다.
+
+# 20\. `strftime()`
+
+`strftime()`은 날짜와 시간 객체를 ****문자열로 변환하면서 원하는 형식으로 표시하는 메소드****입니다.
+
+예:
+
+now.strftime("%Y-%m-%d")  
+
+결과:
+
+2026-08-16  
+
+시간까지 포함하면:
+
+now.strftime("%Y-%m-%d %H:%M:%S")  
+
+결과:
+
+2026-08-16 11:30:25  
+
+특히 파일 이름을 만들 때 유용합니다.
+
+예:
+
+timestamp = datetime.now().strftime("%Y%m%d\_%H%M%S")  
+
+결과:
+
+20260816\_113025  
+
+따라서:
+
+backup\_filename = f"backup\_{timestamp}.json"  
+
+처럼 사용하면:
+
+backup\_20260816\_113025.json  
+
+같은 파일 이름을 만들 수 있습니다.
+
+# 21\. `f-string`
+
+위의 예제에서 사용한:
+
+f"backup\_{timestamp}.json"  
+
+은 Python의 ****f-string**** 문법입니다.
+
+문자열 앞에:
+
+f  
+
+를 붙이면 문자열 안에 변수의 값을 쉽게 넣을 수 있습니다.
+
+예:
+
+name = "홍길동"  
+  
+message = f"안녕하세요, {name}님"  
+
+결과:
+
+안녕하세요, 홍길동님  
+
+따라서:
+
+timestamp = "20260816\_113025"  
+  
+filename = f"backup\_{timestamp}.json"  
+
+결과:
+
+backup\_20260816\_113025.json  
+
+이 됩니다.
+
+# 22\. 전체 코드에서 서로 어떻게 연결되는가?
+
+지금까지 설명한 기능들은 파일 백업 프로그램에서 서로 연결해서 사용할 수 있습니다.
+
+예를 들어:
+
+from datetime import datetime  
+from pathlib import Path  
+import shutil  
+  
+data\_dir = Path("data")  
+backup\_dir = Path("backup")  
+  
+backup\_dir.mkdir(parents=True, exist\_ok=True)  
+  
+backup\_files = list(data\_dir.glob("\*.json"))  
+  
+timestamp = datetime.now().strftime("%Y%m%d\_%H%M%S")  
+  
+for file\_path in backup\_files:  
+    backup\_path = backup\_dir / f"{file\_path.stem}\_{timestamp}.json"  
+  
+    shutil.copy2(  
+        file\_path,  
+        backup\_path  
+    )  
+
+이 코드를 순서대로 해석하면 다음과 같습니다.
+
+### ① `Path`
+
+data\_dir = Path("data")  
+backup\_dir = Path("backup")  
+
+`data`와 `backup`이라는 폴더의 경로를 만듭니다.
+
+### ② `mkdir()`
+
+backup\_dir.mkdir(parents=True, exist\_ok=True)  
+
+백업 폴더가 없으면 생성합니다.
+
+### ③ `glob()`
+
+backup\_files = list(data\_dir.glob("\*.json"))  
+
+`data` 폴더 안에서 `.json` 파일을 찾습니다.
+
+### ④ `datetime.now()`
+
+datetime.now()  
+
+현재 날짜와 시간을 가져옵니다.
+
+### ⑤ `strftime()`
+
+strftime("%Y%m%d\_%H%M%S")  
+
+현재 시간을 파일 이름에 넣기 좋은 문자열로 변환합니다.
+
+예:
+
+20260816\_113025  
+
+### ⑥ `for`
+
+for file\_path in backup\_files:  
+
+찾은 JSON 파일들을 하나씩 처리합니다.
+
+### ⑦ `shutil.copy2()`
+
+shutil.copy2(  
+    file\_path,  
+    backup\_path  
+)  
+
+원본 파일을 백업 폴더로 복사합니다.
+
+# 23\. 핵심 문법 한눈에 보기
+
+| 문법 / 기능            | 쉽게 말하면                      |
+| ------------------ | --------------------------- |
+| Path               | 파일과 폴더의 경로를 다루는 객체          |
+| glob()             | 특정 패턴의 파일을 찾기               |
+| mkdir()            | 폴더 만들기                      |
+| exists()           | 파일/폴더가 존재하는지 확인             |
+| is_file()          | 파일인지 확인                     |
+| is_dir()           | 폴더인지 확인                     |
+| 리스트 컴프리헨션          | 반복문으로 리스트를 간단하게 만들기         |
+| lambda             | 이름 없는 간단한 함수 만들기            |
+| KeyboardInterrupt  | Ctrl + C 등으로 프로그램을 중단할 때 발생 |
+| EOFError           | 입력의 끝(EOF)을 만났을 때 발생        |
+| datetime.now()     | 현재 날짜와 시간 가져오기              |
+| strftime()         | 날짜/시간을 원하는 문자열로 변환          |
+| _                  | 내부용이라는 의도를 나타내는 관례          |
+| with               | 작업이 끝난 후 자원을 자동으로 정리        |
+| raise              | 의도적으로 예외 발생시키기              |
+| ValueError         | 값이 잘못되었을 때 발생하는 예외          |
+| append()           | 리스트에 항목 하나 추가               |
+| extend()           | 다른 리스트의 항목들을 하나씩 추가         |
+| sorted()           | 데이터를 정렬해서 새로운 리스트 반환        |
+| key                | 정렬할 때 어떤 값을 기준으로 할지 지정      |
+| reverse=True       | 내림차순으로 정렬                   |
+| stat()             | 파일의 정보 가져오기                 |
+| st_mtime           | 파일의 마지막 수정 시간               |
+| json.dump()        | Python 데이터를 JSON 파일로 저장     |
+| ensure_ascii=False | 한글 등을 그대로 저장                |
+| indent=4           | JSON을 보기 좋게 들여쓰기            |
+| shutil.copy2()     | 파일을 복사하면서 메타데이터도 보존         |
+| f-string           | 문자열 안에 변수 값을 쉽게 넣기          |
+
+# 24\. 가장 중요한 부분만 쉽게 기억하기
+
+Python 파일 처리 코드를 볼 때 다음 정도를 기억하면 코드를 이해하는 데 큰 도움이 됩니다.
+
+Path  
+
+→ 파일이나 폴더의 위치를 다룬다.
+
+glob()  
+
+→ 원하는 파일을 찾는다.
+
+with  
+
+→ 파일을 안전하게 사용한다.
+
+append()  
+
+→ 하나를 추가한다.
+
+extend()  
+
+→ 여러 개를 펼쳐서 추가한다.
+
+lambda  
+
+→ 간단한 함수를 한 줄로 만든다.
+
+sorted()  
+
+→ 정렬한다.
+
+key=lambda ...  
+
+→ 무엇을 기준으로 정렬할지 정한다.
+
+reverse=True  
+
+→ 큰 값부터 정렬한다.
+
+stat().st\_mtime  
+
+→ 파일이 마지막으로 수정된 시간을 가져온다.
+
+json.dump()  
+
+→ 데이터를 JSON 파일에 저장한다.
+
+shutil.copy2()  
+
+→ 파일을 복사한다.
+
+strftime()  
+
+→ 날짜와 시간을 원하는 문자열로 만든다.
+
+raise ValueError()  
+
+→ 잘못된 값이라고 판단하면 직접 오류를 발생시킨다.
+
+KeyboardInterrupt  
+
+→ 사용자가 프로그램을 강제로 중단했을 때 처리한다.
+
+EOFError  
+
+→ 입력이 끝났을 때 발생하는 오류를 처리한다.
+
+그리고 메소드 이름 앞의:
+
+\_  
+
+는 보통:
+
+> "이것은 클래스 내부에서 사용하는 용도의 메소드입니다."
+
+라는 개발자의 의도를 나타내는 ****관례****이며, Python이 접근 자체를 강제로 차단하는 것은 아닙니다.
