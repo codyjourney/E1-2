@@ -5365,6 +5365,8 @@ ensure\_ascii=False
 
 반대로 설정하지 않으면 Unicode 문자가 escape 형태로 저장될 수 있습니다.
 
+ensure_ascii=False → 한글, 일본어, 이모지 등의 유니코드 문자를 \uXXXX로 바꾸지 않고 그대로 표시
+
 ## `indent=4`
 
 JSON 파일을 보기 좋게 들여쓰기합니다.
@@ -5424,7 +5426,7 @@ backup/state.json
 
 # 20\. `strftime()`
 
-`strftime()`은 날짜와 시간 객체를 ****문자열로 변환하면서 원하는 형식으로 표시하는 메소드****입니다.
+`strftime()`은 날짜와 시간 객체를 ****문자열로 변환하면서 원하는 형식으로 표시하는 메소드****입니다 string format time.
 
 예:
 
@@ -5544,7 +5546,7 @@ backup\_dir.mkdir(parents=True, exist\_ok=True)
 
 backup\_files = list(data\_dir.glob("\*.json"))  
 
-`data` 폴더 안에서 `.json` 파일을 찾습니다.
+`data` 폴더 안에서 `.json` 파일을 찾습니다. global.
 
 ### ④ `datetime.now()`
 
@@ -5687,3 +5689,118 @@ EOFError
 > "이것은 클래스 내부에서 사용하는 용도의 메소드입니다."
 
 라는 개발자의 의도를 나타내는 ****관례****이며, Python이 접근 자체를 강제로 차단하는 것은 아닙니다.
+
+
+## `path.stat()`
+
+`pathlib.Path`의 `stat()` 메서드를 호출하면 해당 파일의 **파일 정보(metadata)**를 가져옵니다.
+
+예를 들어 파일 크기나 수정 시간 등의 정보를 확인할 수 있습니다.
+
+```python
+from pathlib import Path
+
+path = Path("test.txt")
+
+info = path.stat()
+
+print(info.st_size)   # 파일 크기
+print(info.st_mtime)  # 마지막 수정 시각
+```
+
+### `st_size`
+
+`info.st_size`는 **파일 크기**를 의미합니다.
+
+```python
+info = path.stat()
+
+print(info.st_size)
+```
+
+### `st_mtime`
+
+`st_mtime`은 **파일이 마지막으로 수정된 시각**을 나타냅니다.
+
+```python
+path.stat().st_mtime
+```
+
+이 값을 사용하면 여러 파일을 **수정된 시각을 기준으로 정렬**할 수 있습니다.
+
+```python
+files = sorted(files, key=lambda path: path.stat().st_mtime)
+```
+
+이렇게 하면:
+
+```text
+가장 오래된 파일
+↓
+...
+↓
+가장 최근에 수정된 파일
+```
+
+순서로 정렬됩니다.
+
+---
+
+## `pathlib.Path`에만 해당하는가?
+
+아닙니다.
+
+**`st_mtime` 자체는 `pathlib.Path`에만 해당하는 것이 아닙니다.**
+
+`Path.stat()`은 운영체제의 **파일 상태 정보(stat result)**를 가져오는 방법 중 하나입니다.
+
+### `pathlib.Path`에서 사용
+
+```python
+from pathlib import Path
+
+path = Path("test.txt")
+
+info = path.stat()
+
+print(info.st_size)
+print(info.st_mtime)
+```
+
+### `os`에서도 사용
+
+Python의 `os` 모듈에서도 동일한 파일 정보를 가져올 수 있습니다.
+
+```python
+import os
+
+info = os.stat("test.txt")
+
+print(info.st_size)
+print(info.st_mtime)
+```
+
+### 정리
+
+| 표현 | 의미 |
+|---|---|
+| `path.stat()` | `Path` 객체를 통해 파일 정보 가져오기 |
+| `os.stat(path)` | `os` 모듈을 통해 파일 정보 가져오기 |
+| `.st_size` | 파일 크기 |
+| `.st_mtime` | 마지막 수정 시각 |
+
+따라서 **`stat()`은 `pathlib`만의 개념이 아닙니다.**
+
+`Path.stat()`은 파일의 상태 정보를 가져오는 기능을 `pathlib.Path` 객체에서 사용할 수 있도록 제공하는 메서드입니다.
+
+> **`st_mtime` → 파일 정보(metadata)에 들어 있는 값**
+>
+> **`Path.stat()` → 해당 파일의 metadata를 가져오는 `Path` 객체의 메서드**
+
+즉,
+
+```python
+path.stat().st_mtime
+```
+
+은 **"Path 객체가 가리키는 파일의 마지막 수정 시각을 가져온다"**는 뜻입니다.
