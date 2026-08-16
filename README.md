@@ -134,74 +134,501 @@ E1-2/
 ```
 
 ## 7. 설명
-## 클래스 및 메서드 설명
+# 🐍 Python 콘솔 퀴즈 게임
 
-이 프로젝트는 기능별 역할을 분리하기 위해 `Quiz`, `Storage`, `QuizGame` 3개의 클래스로 구성했습니다.
+Python 입문자를 위한 **콘솔 기반 퀴즈 게임**입니다.
 
-- `Quiz`: 하나의 퀴즈 데이터를 관리
-- `Storage`: JSON 파일의 저장과 불러오기를 담당
-- `QuizGame`: 메뉴, 퀴즈 진행, 퀴즈 추가, 점수 등 게임 전체 흐름을 관리
+이 프로젝트에서는 Python의 기본 문법뿐만 아니라 다음과 같은 개념을 함께 학습할 수 있습니다.
+
+- 클래스(Class)
+- 객체(Object)
+- 메서드(Method)
+- 함수(Function)
+- 리스트(List)
+- 딕셔너리(Dictionary)
+- 조건문(`if`, `elif`, `else`)
+- 반복문(`for`, `while`)
+- 예외 처리(`try`, `except`)
+- 파일 입출력
+- JSON 데이터 저장
+- `pathlib.Path`
+- `datetime`
+- `random`
+- 리스트 컴프리헨션
+- `lambda`
+- 백업 및 복구
+- `KeyboardInterrupt`
+- `EOFError`
 
 ---
 
-### 1. Quiz 클래스
+# 📌 1. 프로그램의 전체 구조
 
-`Quiz` 클래스는 하나의 퀴즈 문제를 객체로 표현합니다.
+이 프로그램은 크게 3개의 클래스와 1개의 함수로 구성되어 있습니다.
 
-각 퀴즈는 다음 3개의 데이터를 가집니다.
+```text
+Quiz
+ └─ 하나의 퀴즈 문제를 관리
 
-- `question`: 문제 내용
-- `choices`: 4개의 선택지
-- `answer`: 정답 번호
+Storage
+ └─ state.json 파일 저장/불러오기
+ └─ 백업 및 복구 관리
 
-#### 주요 속성
+QuizGame
+ └─ 실제 게임의 전체 흐름 관리
 
-| 속성 | 자료형 | 설명 |
-|---|---|---|
-| `question` | `str` | 퀴즈 문제 |
-| `choices` | `list` | 4개의 선택지 |
-| `answer` | `int` | 정답 번호 (`1~4`) |
-
-#### `__init__()`
-
-```python
-def __init__(self, question, choices, answer):
-    self.question = question
-    self.choices = choices
-    self.answer = answer
+main()
+ └─ 프로그램 시작
 ```
 
-퀴즈 객체가 생성될 때 문제, 선택지, 정답을 초기화합니다.
+전체적인 데이터 흐름은 다음과 같습니다.
+
+```text
+사용자
+  │
+  ▼
+QuizGame
+  │
+  ├── Quiz 객체 사용
+  │
+  └── Storage 사용
+          │
+          ▼
+      state.json
+```
+
+즉, 각각의 클래스가 서로 다른 역할을 담당합니다.
+
+| 구성 요소 | 역할 |
+|---|---|
+| `Quiz` | 하나의 문제와 선택지, 정답 관리 |
+| `Storage` | JSON 파일 저장/불러오기 및 백업 관리 |
+| `QuizGame` | 실제 퀴즈 게임 진행 |
+| `main()` | 프로그램 시작 및 종료 처리 |
+
+이처럼 역할을 나누는 것을 **관심사의 분리(Separation of Concerns)**라고 볼 수 있습니다.
+
+---
+
+# 📌 2. 사용하는 Python 모듈
+
+프로그램에서는 다음 모듈을 사용합니다.
+
+```python
+import json
+import random
+from pathlib import Path
+from datetime import datetime
+```
+
+각각의 역할은 다음과 같습니다.
+
+| 모듈 | 역할 |
+|---|---|
+| `json` | JSON 파일 읽기/저장 |
+| `random` | 퀴즈 순서 무작위 섞기 |
+| `pathlib.Path` | 파일 경로 관리 |
+| `datetime` | 백업 파일의 날짜와 시간 생성 |
+
+---
+
+# 📌 3. `import`
+
+## `import json`
+
+```python
+import json
+```
+
+Python의 `json` 모듈을 가져옵니다.
+
+JSON은 데이터를 저장할 때 많이 사용하는 형식입니다.
+
+예를 들어 Python 딕셔너리:
+
+```python
+data = {
+    "name": "Python",
+    "score": 100
+}
+```
+
+이 데이터를 JSON 파일로 저장할 수 있습니다.
+
+이 프로그램에서는 `state.json`에 다음과 같은 데이터를 저장합니다.
+
+```json
+{
+    "quizzes": [],
+    "best_score": 80
+}
+```
+
+---
+
+# 📌 4. `random`
+
+```python
+import random
+```
+
+무작위 값을 만들 때 사용하는 모듈입니다.
+
+이 프로그램에서는:
+
+```python
+random.shuffle(quiz_list)
+```
+
+을 사용합니다.
+
+`shuffle()`은 리스트의 순서를 무작위로 섞습니다.
 
 예를 들어:
 
 ```python
-quiz = Quiz(
-    "Python에서 문자열을 나타내는 자료형은?",
+quiz_list = [1, 2, 3, 4, 5]
+```
+
+다음과 같이 변경될 수 있습니다.
+
+```python
+[4, 1, 5, 2, 3]
+```
+
+따라서 게임을 실행할 때마다 문제가 다른 순서로 출제됩니다.
+
+---
+
+# 📌 5. `Path`
+
+```python
+from pathlib import Path
+```
+
+파일과 폴더의 경로를 쉽게 관리할 수 있게 해주는 클래스입니다.
+
+예를 들어:
+
+```python
+Path("state.json")
+```
+
+은 `state.json`이라는 파일 경로를 나타냅니다.
+
+문자열로 경로를 관리하는 것보다 `Path`를 사용하면 파일 관련 작업을 쉽게 처리할 수 있습니다.
+
+예:
+
+```python
+self.file_path.exists()
+```
+
+파일이 존재하는지 확인합니다.
+
+```python
+self.file_path.open()
+```
+
+파일을 엽니다.
+
+```python
+self.file_path.parent
+```
+
+파일이 들어 있는 폴더를 가져옵니다.
+
+---
+
+# 📌 6. `datetime`
+
+```python
+from datetime import datetime
+```
+
+날짜와 시간을 다룰 때 사용하는 클래스입니다.
+
+이 프로그램에서는 백업 파일 이름에 날짜와 시간을 넣기 위해 사용합니다.
+
+```python
+timestamp = datetime.now().strftime(
+    "%Y%m%d_%H%M%S"
+)
+```
+
+예를 들어 현재 시간이 다음과 같다면:
+
+```text
+2026년 8월 16일 10시 25분 30초
+```
+
+다음과 같은 문자열이 만들어집니다.
+
+```text
+20260816_102530
+```
+
+따라서 백업 파일은 다음과 같은 이름으로 만들어질 수 있습니다.
+
+```text
+state.json.20260816_102530.bak
+```
+
+---
+
+# 🏗️ 7. `Quiz` 클래스
+
+```python
+class Quiz:
+```
+
+`Quiz` 클래스는 **하나의 퀴즈 문제**를 표현합니다.
+
+하나의 퀴즈는 다음 세 가지 정보를 가집니다.
+
+```text
+문제
+선택지
+정답
+```
+
+예를 들어:
+
+```python
+Quiz(
+    "Python에서 문자열 자료형은?",
     ["str", "int", "list", "bool"],
     1
 )
 ```
 
-위 코드에서는 `question`, `choices`, `answer`가 해당 객체의 속성으로 저장됩니다.
+은 다음과 같은 문제를 의미합니다.
+
+```text
+문제:
+Python에서 문자열 자료형은?
+
+1. str
+2. int
+3. list
+4. bool
+
+정답:
+1번
+```
 
 ---
 
-#### `display()`
+# 📌 8. 클래스란?
+
+클래스는 쉽게 말하면 **객체를 만들기 위한 설계도**입니다.
+
+예를 들어 `Quiz`라는 설계도를 만들고:
+
+```python
+quiz1 = Quiz(...)
+quiz2 = Quiz(...)
+quiz3 = Quiz(...)
+```
+
+여러 개의 퀴즈 객체를 만들 수 있습니다.
+
+```text
+Quiz 클래스
+     │
+     ├── quiz1
+     ├── quiz2
+     └── quiz3
+```
+
+각 객체는 서로 다른 문제를 가질 수 있습니다.
+
+---
+
+# 📌 9. `__init__()` 메서드
+
+```python
+def __init__(self, question, choices, answer):
+```
+
+`__init__()`은 객체가 생성될 때 자동으로 실행되는 특별한 메서드입니다.
+
+예:
+
+```python
+quiz = Quiz(
+    "2 + 2 = ?",
+    ["1", "2", "3", "4"],
+    4
+)
+```
+
+객체가 만들어질 때 자동으로:
+
+```python
+__init__(
+    self,
+    "2 + 2 = ?",
+    ["1", "2", "3", "4"],
+    4
+)
+```
+
+가 실행됩니다.
+
+---
+
+# 📌 10. `self`
+
+Python 클래스에서 매우 중요한 개념입니다.
+
+```python
+self
+```
+
+는 **현재 객체 자기 자신**을 의미합니다.
+
+예를 들어:
+
+```python
+self.question = question
+```
+
+은
+
+> 현재 Quiz 객체의 `question`에 전달받은 `question`을 저장한다.
+
+라는 뜻입니다.
+
+예:
+
+```python
+quiz = Quiz(
+    "2 + 2 = ?",
+    ["1", "2", "3", "4"],
+    4
+)
+```
+
+그러면:
+
+```python
+quiz.question
+```
+
+의 값은:
+
+```text
+2 + 2 = ?
+```
+
+가 됩니다.
+
+그리고:
+
+```python
+quiz.choices
+```
+
+는:
+
+```python
+["1", "2", "3", "4"]
+```
+
+가 됩니다.
+
+```python
+quiz.answer
+```
+
+는:
+
+```text
+4
+```
+
+가 됩니다.
+
+---
+
+# 📌 11. `self.question`
+
+```python
+self.question = question
+```
+
+현재 객체에 문제를 저장합니다.
+
+```text
+question
+   ↓
+self.question
+```
+
+즉:
+
+```python
+quiz.question
+```
+
+으로 문제 내용을 가져올 수 있습니다.
+
+---
+
+# 📌 12. `self.choices`
+
+```python
+self.choices = choices
+```
+
+선택지 목록을 객체에 저장합니다.
+
+예:
+
+```python
+[
+    "str",
+    "int",
+    "list",
+    "bool"
+]
+```
+
+---
+
+# 📌 13. `self.answer`
+
+```python
+self.answer = answer
+```
+
+정답 번호를 저장합니다.
+
+예:
+
+```python
+self.answer = 1
+```
+
+이면 1번이 정답입니다.
+
+---
+
+# 📌 14. `display()` 메서드
 
 ```python
 def display(self, number=None):
 ```
 
-퀴즈 문제와 4개의 선택지를 화면에 출력합니다.
+문제와 선택지를 화면에 출력하는 메서드입니다.
 
-`number`가 전달되면 현재 몇 번째 문제인지 함께 표시합니다.
-
-실행 예시:
+예:
 
 ```text
 [문제 1]
-Python에서 문자열을 나타내는 자료형은?
+
+Python에서 문자열 자료형을 나타내는 것은?
 
 1. str
 2. int
@@ -211,175 +638,1201 @@ Python에서 문자열을 나타내는 자료형은?
 
 ---
 
-#### `check_answer()`
+# 📌 15. 기본값 `number=None`
 
 ```python
-def check_answer(self, user_answer):
-    return user_answer == self.answer
+def display(self, number=None):
 ```
 
-사용자가 입력한 답과 실제 정답을 비교합니다.
+`number`의 기본값을 `None`으로 설정했습니다.
 
-정답이면 `True`, 오답이면 `False`를 반환합니다.
+따라서 다음과 같이 호출할 수 있습니다.
+
+```python
+quiz.display()
+```
+
+또는:
+
+```python
+quiz.display(1)
+```
+
+`number`가 전달되지 않으면:
+
+```python
+number = None
+```
+
+이 됩니다.
+
+---
+
+# 📌 16. `is not None`
+
+```python
+if number is not None:
+```
+
+`number`에 값이 들어 있는지 확인합니다.
 
 예:
 
 ```python
-if quiz.check_answer(1):
-    print("정답입니다!")
+number = 1
+```
+
+이면:
+
+```python
+number is not None
+```
+
+은 `True`입니다.
+
+반면:
+
+```python
+number = None
+```
+
+이면 `False`입니다.
+
+`None`인지 확인할 때는 일반적으로 다음과 같이 작성합니다.
+
+```python
+is None
+is not None
 ```
 
 ---
 
-#### `to_dict()`
+# 📌 17. `print()`
+
+```python
+print(self.question)
+```
+
+화면에 값을 출력합니다.
+
+예:
+
+```python
+print("Hello")
+```
+
+결과:
+
+```text
+Hello
+```
+
+---
+
+# 📌 18. f-string
+
+코드에서 다음과 같은 문법이 사용됩니다.
+
+```python
+print(f"[문제 {number}]")
+```
+
+앞에 `f`를 붙이면 문자열 안에 변수를 쉽게 넣을 수 있습니다.
+
+예:
+
+```python
+number = 3
+
+print(f"[문제 {number}]")
+```
+
+결과:
+
+```text
+[문제 3]
+```
+
+---
+
+# 📌 19. `enumerate()`
+
+선택지 출력 부분:
+
+```python
+for index, choice in enumerate(
+    self.choices,
+    start=1
+):
+```
+
+`enumerate()`는 리스트의 **순서와 값**을 동시에 가져올 때 사용합니다.
+
+예:
+
+```python
+choices = ["A", "B", "C"]
+```
+
+일반적인 반복:
+
+```python
+for choice in choices:
+    print(choice)
+```
+
+결과:
+
+```text
+A
+B
+C
+```
+
+`enumerate()`를 사용하면:
+
+```python
+for index, choice in enumerate(
+    choices,
+    start=1
+):
+    print(index, choice)
+```
+
+결과:
+
+```text
+1 A
+2 B
+3 C
+```
+
+`start=1`은 번호를 1부터 시작하라는 의미입니다.
+
+---
+
+# 📌 20. `check_answer()` 메서드
+
+```python
+def check_answer(self, user_answer):
+```
+
+사용자가 입력한 답이 실제 정답인지 확인합니다.
+
+핵심 코드는:
+
+```python
+return user_answer == self.answer
+```
+
+입니다.
+
+예:
+
+```python
+self.answer = 2
+user_answer = 2
+```
+
+이면:
+
+```python
+2 == 2
+```
+
+결과:
+
+```python
+True
+```
+
+반대로:
+
+```python
+user_answer = 3
+```
+
+이면:
+
+```python
+3 == 2
+```
+
+결과:
+
+```python
+False
+```
+
+---
+
+# 📌 21. `return`
+
+```python
+return user_answer == self.answer
+```
+
+`return`은 함수나 메서드의 결과를 호출한 곳으로 돌려줍니다.
+
+예:
+
+```python
+def add(a, b):
+    return a + b
+```
+
+사용:
+
+```python
+result = add(10, 20)
+```
+
+그러면:
+
+```text
+result = 30
+```
+
+이 됩니다.
+
+---
+
+# 📌 22. `to_dict()` 메서드
 
 ```python
 def to_dict(self):
 ```
 
-`Quiz` 객체를 JSON으로 저장할 수 있는 Dictionary 형태로 변환합니다.
+Quiz 객체를 Python 딕셔너리로 변환합니다.
+
+왜 필요한가요?
+
+JSON은 Python의 `Quiz` 객체 자체를 바로 저장할 수 없기 때문입니다.
+
+따라서:
+
+```text
+Quiz 객체
+   ↓
+딕셔너리
+   ↓
+JSON
+```
+
+과정을 거칩니다.
 
 예:
 
 ```python
 {
-    "question": "Python에서 문자열을 나타내는 자료형은?",
-    "choices": ["str", "int", "list", "bool"],
-    "answer": 1
+    "question": "2 + 2 = ?",
+    "choices": ["1", "2", "3", "4"],
+    "answer": 4
 }
 ```
 
-객체 자체는 JSON으로 직접 저장할 수 없기 때문에 `to_dict()`를 사용하여 Dictionary로 변환한 후 저장합니다.
+---
+
+# 💾 23. `Storage` 클래스
+
+```python
+class Storage:
+```
+
+`Storage`는 파일 저장과 관련된 작업을 담당합니다.
+
+주요 역할은 다음과 같습니다.
+
+```text
+state.json 읽기
+state.json 저장
+백업 만들기
+백업 확인
+손상된 데이터 복구
+```
+
+즉:
+
+```text
+QuizGame
+   │
+   ▼
+Storage
+   │
+   ├── 읽기
+   ├── 저장
+   ├── 백업
+   └── 복구
+```
+
+게임 로직과 파일 처리 로직을 분리하기 위한 클래스입니다.
 
 ---
 
-#### `from_dict()`
-
-```python
-@classmethod
-def from_dict(cls, data):
-```
-
-JSON에서 불러온 Dictionary 데이터를 다시 `Quiz` 객체로 변환합니다.
-
-저장된 데이터:
-
-```python
-{
-    "question": "Python에서 문자열을 나타내는 자료형은?",
-    "choices": ["str", "int", "list", "bool"],
-    "answer": 1
-}
-```
-
-을 다음과 같은 `Quiz` 객체로 변환합니다.
-
-```python
-Quiz(
-    "Python에서 문자열을 나타내는 자료형은?",
-    ["str", "int", "list", "bool"],
-    1
-)
-```
-
-`@classmethod`를 사용하여 클래스 자체를 통해 객체를 생성합니다.
-
----
-
-### 2. Storage 클래스
-
-`Storage` 클래스는 `state.json` 파일의 저장과 불러오기를 담당합니다.
-
-게임 로직과 파일 입출력 로직을 분리하여 `QuizGame` 클래스가 JSON 파일의 세부적인 처리 방법을 직접 알 필요가 없도록 구성했습니다.
-
-#### 주요 속성
-
-| 속성 | 자료형 | 설명 |
-|---|---|---|
-| `file_path` | `Path` | `state.json` 파일의 경로 |
-
----
-
-#### `__init__()`
+# 📌 24. `Storage.__init__()`
 
 ```python
 def __init__(self, file_path):
-    self.file_path = Path(file_path)
 ```
 
+저장할 파일 경로를 전달받습니다.
 
-JSON 파일의 경로를 저장합니다.
+예:
 
-`Path`를 사용하여 운영체제에 맞는 파일 경로를 쉽게 처리할 수 있도록 했습니다.
+```python
+storage = Storage("state.json")
+```
+
+그러면:
+
+```python
+self.file_path
+```
+
+에는 `state.json`의 경로가 저장됩니다.
 
 ---
 
-#### `load()`
+# 📌 25. `Path(file_path)`
+
+```python
+self.file_path = Path(file_path)
+```
+
+문자열로 받은 파일 경로를 `Path` 객체로 변환합니다.
+
+예:
+
+```python
+file_path = "state.json"
+```
+
+을:
+
+```python
+Path("state.json")
+```
+
+으로 변환합니다.
+
+---
+
+# 📌 26. `.suffix`
+
+```python
+self.file_path.suffix
+```
+
+파일의 확장자를 가져옵니다.
+
+예:
+
+```python
+Path("state.json").suffix
+```
+
+결과:
+
+```text
+.json
+```
+
+---
+
+# 📌 27. `.with_suffix()`
+
+```python
+self.file_path.with_suffix(
+    self.file_path.suffix + ".bak"
+)
+```
+
+파일의 확장자를 변경합니다.
+
+예:
+
+```text
+state.json
+```
+
+의 suffix는:
+
+```text
+.json
+```
+
+입니다.
+
+여기에 `.bak`을 붙이면:
+
+```text
+.json.bak
+```
+
+이 됩니다.
+
+따라서 결과는:
+
+```text
+state.json.bak
+```
+
+입니다.
+
+---
+
+# 📌 28. `_load_file()` 메서드
+
+```python
+def _load_file(self, file_path):
+```
+
+JSON 파일 하나를 읽는 내부용 메서드입니다.
+
+메서드 이름 앞에 `_`가 붙어 있습니다.
+
+```python
+_load_file()
+```
+
+Python에서 `_`는 일반적으로:
+
+> 이 메서드는 클래스 내부에서 사용하는 메서드입니다.
+
+라는 의도를 표현할 때 사용합니다.
+
+Python이 강제로 접근을 막는 것은 아닙니다.
+
+---
+
+# 📌 29. `with`
+
+파일을 열 때 다음과 같이 작성합니다.
+
+```python
+with file_path.open(
+    "r",
+    encoding="utf-8"
+) as file:
+```
+
+`with`를 사용하면 작업이 끝난 후 파일을 자동으로 닫아줍니다.
+
+일반적으로 파일을 직접 열고 닫으면:
+
+```python
+file = open("state.json", "r")
+data = file.read()
+file.close()
+```
+
+처럼 작성해야 합니다.
+
+하지만 `with`를 사용하면:
+
+```python
+with open("state.json", "r") as file:
+    data = file.read()
+```
+
+처럼 사용할 수 있습니다.
+
+파일을 사용한 후 자동으로 정리되므로 더 안전하고 편리합니다.
+
+---
+
+# 📌 30. 파일 모드 `"r"`
+
+```python
+file_path.open("r")
+```
+
+`r`은 `read`의 약자로 **읽기 모드**입니다.
+
+대표적인 파일 모드는 다음과 같습니다.
+
+| 모드 | 의미 |
+|---|---|
+| `r` | 읽기 |
+| `w` | 쓰기 |
+| `a` | 이어쓰기 |
+| `x` | 새 파일 생성 |
+
+이 프로그램에서는:
+
+```python
+"r"
+```
+
+은 JSON 읽기에 사용하고:
+
+```python
+"w"
+```
+
+는 JSON 저장에 사용합니다.
+
+---
+
+# 📌 31. `encoding="utf-8"`
+
+```python
+encoding="utf-8"
+```
+
+한글과 같은 문자를 정상적으로 읽고 저장하기 위해 사용합니다.
+
+예:
+
+```python
+with open(
+    "state.json",
+    "r",
+    encoding="utf-8"
+) as file:
+    ...
+```
+
+한글 데이터가 포함된 파일을 다룰 때 매우 중요합니다.
+
+---
+
+# 📌 32. `json.load()`
+
+```python
+data = json.load(file)
+```
+
+JSON 파일의 내용을 읽어서 Python 객체로 변환합니다.
+
+예를 들어 JSON 파일:
+
+```json
+{
+    "best_score": 80
+}
+```
+
+을 읽으면 Python에서는:
+
+```python
+{
+    "best_score": 80
+}
+```
+
+이라는 딕셔너리가 됩니다.
+
+즉:
+
+```text
+JSON 파일
+   ↓
+json.load()
+   ↓
+Python 객체
+```
+
+---
+
+# 📌 33. `isinstance()`
+
+코드에서는:
+
+```python
+isinstance(data, dict)
+```
+
+와 같이 사용합니다.
+
+`isinstance()`는 값이 특정 자료형인지 확인합니다.
+
+예:
+
+```python
+data = {}
+```
+
+이라면:
+
+```python
+isinstance(data, dict)
+```
+
+결과는:
+
+```python
+True
+```
+
+입니다.
+
+예:
+
+```python
+data = []
+```
+
+이면:
+
+```python
+isinstance(data, dict)
+```
+
+결과는:
+
+```python
+False
+```
+
+입니다.
+
+이 프로그램에서는 저장된 JSON 데이터가 올바른 자료형인지 확인하는 데 사용합니다.
+
+---
+
+# 📌 34. `raise ValueError`
+
+예:
+
+```python
+raise ValueError(
+    "데이터 형식이 올바르지 않습니다."
+)
+```
+
+`raise`는 직접 예외를 발생시킬 때 사용합니다.
+
+즉:
+
+> 이 데이터는 정상적인 형태가 아니므로 오류로 처리하겠다.
+
+라는 의미입니다.
+
+---
+
+# 📌 35. `ValueError`
+
+`ValueError`는 값의 형태가 적절하지 않을 때 사용하는 예외입니다.
+
+예를 들어:
+
+```python
+int("hello")
+```
+
+처럼 숫자가 아닌 문자열을 숫자로 변환하려고 하면 `ValueError`가 발생합니다.
+
+이 프로그램에서는 잘못된 JSON 데이터 구조를 발견했을 때도 사용합니다.
+
+---
+
+# 📌 36. `_get_backup_files()`
+
+```python
+def _get_backup_files(self):
+```
+
+사용 가능한 백업 파일 목록을 찾습니다.
+
+이 프로그램에서 찾는 백업은 다음과 같습니다.
+
+```text
+state.json.bak
+
+state.json.20260816_101500.bak
+
+state.json.20260816_102000.bak
+```
+
+---
+
+# 📌 37. `exists()`
+
+```python
+self.backup_file_path.exists()
+```
+
+파일이나 폴더가 실제로 존재하는지 확인합니다.
+
+결과는 `True` 또는 `False`입니다.
+
+예:
+
+```python
+Path("state.json").exists()
+```
+
+파일이 있으면:
+
+```python
+True
+```
+
+없으면:
+
+```python
+False
+```
+
+---
+
+# 📌 38. `glob()`
+
+```python
+self.file_path.parent.glob(
+    f"{self.file_path.name}.*.bak"
+)
+```
+
+특정 패턴에 맞는 파일들을 찾습니다.
+
+예를 들어:
+
+```text
+state.json.20260816_101500.bak
+state.json.20260816_102000.bak
+state.json.20260816_103000.bak
+```
+
+같은 파일을 찾을 수 있습니다.
+
+`*`는 여러 문자열을 의미합니다.
+
+---
+
+# 📌 39. `extend()`
+
+```python
+backup_files.extend(
+    timestamp_backups
+)
+```
+
+리스트에 여러 개의 값을 추가합니다.
+
+예:
+
+```python
+numbers = [1, 2]
+
+numbers.extend([3, 4])
+```
+
+결과:
+
+```python
+[1, 2, 3, 4]
+```
+
+---
+
+# 📌 40. `sorted()`
+
+```python
+return sorted(
+    backup_files,
+    key=lambda path: path.stat().st_mtime,
+    reverse=True
+)
+```
+
+리스트를 정렬합니다.
+
+여기서는 파일의 수정 시간을 기준으로 정렬합니다.
+
+---
+
+# 📌 41. `lambda`
+
+```python
+lambda path: path.stat().st_mtime
+```
+
+`lambda`는 간단한 함수를 한 줄로 만드는 문법입니다.
+
+위 코드는 사실상 다음과 비슷합니다.
+
+```python
+def get_modified_time(path):
+    return path.stat().st_mtime
+```
+
+즉:
+
+```python
+lambda path: path.stat().st_mtime
+```
+
+은
+
+> path를 받아서 파일 수정 시간을 반환하는 간단한 함수
+
+입니다.
+
+---
+
+# 📌 42. `stat().st_mtime`
+
+```python
+path.stat().st_mtime
+```
+
+파일의 마지막 수정 시간을 가져옵니다.
+
+따라서:
+
+```python
+sorted(
+    backup_files,
+    key=lambda path: path.stat().st_mtime,
+    reverse=True
+)
+```
+
+는:
+
+> 파일 수정 시간이 최신인 백업부터 정렬
+
+한다는 의미입니다.
+
+---
+
+# 📌 43. `reverse=True`
+
+```python
+reverse=True
+```
+
+정렬 순서를 뒤집습니다.
+
+기본적으로:
+
+```python
+sorted([1, 3, 2])
+```
+
+결과:
+
+```python
+[1, 2, 3]
+```
+
+하지만:
+
+```python
+sorted(
+    [1, 3, 2],
+    reverse=True
+)
+```
+
+결과:
+
+```python
+[3, 2, 1]
+```
+
+이 프로그램에서는 최신 백업을 먼저 확인하기 위해 사용합니다.
+
+---
+
+# 📌 44. `_restore_from_backup()`
+
+```python
+def _restore_from_backup(self):
+```
+
+손상되거나 없는 `state.json`을 백업 파일로 복구합니다.
+
+처리 순서는:
+
+```text
+백업 목록 확인
+     ↓
+최신 백업 확인
+     ↓
+JSON 정상 여부 확인
+     ↓
+정상이라면 복구
+     ↓
+문제가 있으면 다음 백업 확인
+```
+
+---
+
+# 📌 45. `for`
+
+```python
+for backup_file in backup_files:
+```
+
+리스트의 값을 하나씩 꺼내 반복합니다.
+
+예:
+
+```python
+backup_files = [
+    "backup1",
+    "backup2",
+    "backup3"
+]
+```
+
+이라면:
+
+```text
+backup1
+backup2
+backup3
+```
+
+순서대로 처리합니다.
+
+---
+
+# 📌 46. `try`
+
+```python
+try:
+    ...
+```
+
+오류가 발생할 수 있는 코드를 감싸는 데 사용합니다.
+
+예:
+
+```python
+try:
+    data = self._load_file(backup_file)
+```
+
+JSON 파일을 읽다가 오류가 발생할 수 있기 때문입니다.
+
+---
+
+# 📌 47. `except`
+
+```python
+except ValueError:
+    ...
+```
+
+`try` 안에서 특정 오류가 발생했을 때 실행됩니다.
+
+즉:
+
+```text
+try
+ ↓
+코드 실행
+ ↓
+오류 발생?
+ ├─ 아니오 → 계속 진행
+ └─ 예 → except 실행
+```
+
+---
+
+# 📌 48. 여러 예외를 한 번에 처리
+
+```python
+except (
+    json.JSONDecodeError,
+    ValueError,
+    KeyError,
+    TypeError,
+    OSError
+):
+```
+
+여러 종류의 예외를 한 번에 처리할 수 있습니다.
+
+각 예외의 의미는 대략 다음과 같습니다.
+
+| 예외 | 의미 |
+|---|---|
+| `JSONDecodeError` | JSON 문법 오류 |
+| `ValueError` | 값이 올바르지 않음 |
+| `KeyError` | 딕셔너리에 없는 키 접근 |
+| `TypeError` | 자료형 사용이 잘못됨 |
+| `OSError` | 파일/운영체제 관련 오류 |
+
+---
+
+# 📌 49. `continue`
+
+```python
+continue
+```
+
+현재 반복을 중단하고 다음 반복으로 넘어갑니다.
+
+예:
+
+```python
+for number in numbers:
+
+    if number < 0:
+        continue
+
+    print(number)
+```
+
+음수는 건너뛰고 다음 값으로 넘어갑니다.
+
+이 프로그램에서는 손상된 백업을 발견하면:
+
+```python
+continue
+```
+
+하여 다음 백업 파일을 확인합니다.
+
+---
+
+# 📌 50. `replace()`
+
+```python
+backup_file.replace(
+    self.file_path
+)
+```
+
+백업 파일을 `state.json`으로 이동/이름 변경합니다.
+
+예:
+
+```text
+state.json.20260816_102530.bak
+```
+
+을:
+
+```text
+state.json
+```
+
+으로 복구합니다.
+
+---
+
+# 📌 51. `load()` 메서드
 
 ```python
 def load(self):
 ```
 
-`state.json` 파일을 읽고 저장된 데이터를 반환합니다.
+게임 데이터를 불러오는 가장 중요한 메서드입니다.
 
-주요 처리 과정:
+처리 순서는 다음과 같습니다.
 
 ```text
-state.json 열기
-    ↓
-JSON 데이터 읽기
-    ↓
-Dictionary 형식인지 확인
-    ↓
-quizzes / best_score 확인
-    ↓
+state.json 존재?
+       │
+   ┌───┴───┐
+   │       │
+  없음     있음
+   │       │
+   ▼       ▼
+백업 확인  JSON 읽기
+   │       │
+   ▼       ▼
+복구 성공? 정상?
+   │       │
+   ▼       ▼
 데이터 반환
 ```
 
-파일이 존재하지 않는 경우:
+---
 
-```text
-📂 저장된 데이터가 없습니다. 기본 퀴즈를 사용합니다.
+# 📌 52. `json.JSONDecodeError`
+
+JSON 파일 자체가 문법적으로 잘못되어 있을 때 발생합니다.
+
+예를 들어 잘못된 JSON:
+
+```json
+{
+    "name": "Python",
 ```
 
-라는 메시지를 출력하고 `None`을 반환합니다.
+처럼 닫는 `}`가 없다면 JSON을 정상적으로 읽을 수 없습니다.
 
-JSON 파일이 손상되었거나 데이터 구조가 잘못된 경우에도 예외를 처리하고 `None`을 반환합니다.
+이때:
 
-사용한 주요 예외 처리:
+```python
+json.JSONDecodeError
+```
 
-- `FileNotFoundError`
-- `json.JSONDecodeError`
-- `ValueError`
-- `KeyError`
-- `TypeError`
-- `OSError`
+가 발생할 수 있습니다.
 
 ---
 
-#### `save()`
+# 💾 53. `save()` 메서드
 
 ```python
 def save(self, quizzes, best_score):
 ```
 
-현재 퀴즈 목록과 최고 점수를 `state.json`에 저장합니다.
+퀴즈와 최고 점수를 `state.json`에 저장합니다.
 
-저장하기 전에 각 `Quiz` 객체를 `to_dict()`를 통해 Dictionary로 변환합니다.
+저장 과정은 다음과 같습니다.
 
 ```text
-Quiz 객체
-    ↓
-to_dict()
-    ↓
-Dictionary
-    ↓
-json.dump()
-    ↓
-state.json
+현재 state.json 존재?
+       │
+       ▼
+기존 파일 백업
+       │
+       ├── state.json.bak
+       │
+       └── state.json.YYYYMMDD_HHMMSS.bak
+       │
+       ▼
+새로운 state.json 저장
 ```
 
-`ensure_ascii=False` 옵션을 사용하여 한글이 Unicode 코드로 변환되지 않고 그대로 저장되도록 했습니다.
+---
+
+# 📌 54. 리스트 컴프리헨션
+
+다음 코드가 사용됩니다.
+
+```python
+"quizzes": [
+    quiz.to_dict()
+    for quiz in quizzes
+],
+```
+
+이것은 **리스트 컴프리헨션(List Comprehension)**입니다.
+
+일반적인 `for`문으로 작성하면:
+
+```python
+quiz_data = []
+
+for quiz in quizzes:
+    quiz_data.append(
+        quiz.to_dict()
+    )
+```
+
+리스트 컴프리헨션으로 작성하면:
+
+```python
+quiz_data = [
+    quiz.to_dict()
+    for quiz in quizzes
+]
+```
+
+훨씬 짧게 표현할 수 있습니다.
+
+---
+
+# 📌 55. `json.dump()`
 
 ```python
 json.dump(
@@ -390,123 +1843,460 @@ json.dump(
 )
 ```
 
-또한 `encoding="utf-8"`을 사용하여 UTF-8 인코딩으로 데이터를 저장합니다.
+Python 데이터를 JSON 파일에 저장합니다.
+
+구조는:
+
+```text
+Python 데이터
+      ↓
+json.dump()
+      ↓
+JSON 파일
+```
 
 ---
 
-### 3. QuizGame 클래스
+# 📌 56. `ensure_ascii=False`
 
-`QuizGame` 클래스는 퀴즈 게임의 전체적인 흐름을 관리합니다.
+```python
+ensure_ascii=False
+```
 
-메뉴 출력부터 퀴즈 진행, 퀴즈 추가, 목록 확인, 점수 확인, 데이터 저장 및 불러오기까지 게임에 필요한 주요 기능을 담당합니다.
+한글을 그대로 저장하도록 합니다.
 
-#### 주요 속성
+예를 들어:
 
-| 속성 | 자료형 | 설명 |
-|---|---|---|
-| `storage` | `Storage` | JSON 저장/불러오기를 담당하는 객체 |
-| `quizzes` | `list` | 현재 등록된 `Quiz` 객체 목록 |
-| `best_score` | `int` | 현재 최고 점수 |
+```json
+{
+    "question": "Python이란?"
+}
+```
+
+처럼 한글을 사람이 읽기 좋은 형태로 저장할 수 있습니다.
 
 ---
 
-#### `__init__()`
+# 📌 57. `indent=4`
+
+```python
+indent=4
+```
+
+JSON을 보기 좋게 들여쓰기합니다.
+
+예:
+
+```json
+{
+    "quizzes": [
+        {
+            "question": "2 + 2 = ?",
+            "choices": [
+                "1",
+                "2",
+                "3",
+                "4"
+            ],
+            "answer": 4
+        }
+    ],
+    "best_score": 100
+}
+```
+
+---
+
+# 📌 58. `shutil`
+
+코드에서는 필요한 시점에:
+
+```python
+import shutil
+```
+
+을 실행합니다.
+
+`shutil`은 파일 복사와 같은 작업에 사용할 수 있습니다.
+
+이 프로그램에서는:
+
+```python
+shutil.copy2(
+    self.file_path,
+    self.backup_file_path
+)
+```
+
+을 사용하여 파일을 백업합니다.
+
+---
+
+# 📌 59. `copy2()`
+
+```python
+shutil.copy2(
+    source,
+    destination
+)
+```
+
+파일을 복사합니다.
+
+예:
+
+```text
+state.json
+   ↓
+state.json.bak
+```
+
+파일의 메타데이터도 가능한 범위에서 함께 보존합니다.
+
+---
+
+# 📌 60. `datetime.now()`
+
+```python
+datetime.now()
+```
+
+현재 날짜와 시간을 가져옵니다.
+
+예:
+
+```text
+2026-08-16 10:25:30
+```
+
+---
+
+# 📌 61. `strftime()`
+
+```python
+datetime.now().strftime(
+    "%Y%m%d_%H%M%S"
+)
+```
+
+날짜와 시간을 원하는 문자열 형식으로 변환합니다.
+
+주요 형식은 다음과 같습니다.
+
+| 형식 | 의미 |
+|---|---|
+| `%Y` | 4자리 연도 |
+| `%m` | 월 |
+| `%d` | 일 |
+| `%H` | 시간 |
+| `%M` | 분 |
+| `%S` | 초 |
+
+따라서:
+
+```python
+"%Y%m%d_%H%M%S"
+```
+
+는:
+
+```text
+20260816_102530
+```
+
+형태가 됩니다.
+
+---
+
+# 🎮 62. `QuizGame` 클래스
+
+```python
+class QuizGame:
+```
+
+실제 게임의 전체 흐름을 관리합니다.
+
+주요 기능:
+
+```text
+기본 퀴즈 생성
+저장 데이터 불러오기
+데이터 저장
+메뉴 출력
+사용자 입력
+퀴즈 풀기
+퀴즈 추가
+퀴즈 목록 보기
+최고 점수 보기
+게임 실행
+```
+
+즉, 프로그램의 **중앙 관리자 역할**을 합니다.
+
+---
+
+# 📌 63. `QuizGame.__init__()`
 
 ```python
 def __init__(self, storage):
-    self.storage = storage
-    self.quizzes = []
-    self.best_score = 0
-    self.load_data()
 ```
 
-게임 객체가 생성될 때 필요한 속성을 초기화하고 저장된 데이터를 불러옵니다.
+게임 객체가 생성될 때 실행됩니다.
 
-실행 과정:
+가장 먼저:
 
-```text
-QuizGame 생성
-    ↓
-Storage 연결
-    ↓
-quizzes 초기화
-    ↓
-best_score 초기화
-    ↓
-load_data() 실행
+```python
+self.storage = storage
 ```
+
+를 통해 `Storage` 객체를 저장합니다.
+
+그리고:
+
+```python
+self.quizzes = []
+```
+
+로 퀴즈 목록을 초기화하고:
+
+```python
+self.best_score = 0
+```
+
+으로 최고 점수를 초기화합니다.
+
+마지막으로:
+
+```python
+self.load_data()
+```
+
+를 실행하여 저장된 데이터를 불러옵니다.
 
 ---
 
-#### `get_default_quizzes()`
+# 📌 64. 객체를 다른 객체에 전달하기
+
+다음 코드가 있습니다.
+
+```python
+game = QuizGame(storage)
+```
+
+여기서 `storage` 객체를 `QuizGame` 객체에게 전달합니다.
+
+즉:
+
+```text
+Storage 객체
+    │
+    ▼
+QuizGame
+```
+
+이 구조를 사용하면 `QuizGame`이 파일을 직접 다루지 않고 `Storage`에게 파일 작업을 맡길 수 있습니다.
+
+이런 구조는 객체지향 프로그래밍에서 매우 중요한 개념입니다.
+
+---
+
+# 📌 65. `get_default_quizzes()`
 
 ```python
 def get_default_quizzes(self):
 ```
 
-`state.json`이 처음부터 존재하지 않거나 손상된 경우 사용할 기본 퀴즈 데이터를 생성합니다.
+프로그램을 처음 실행했을 때 사용할 기본 퀴즈를 생성합니다.
 
-현재 Python 입문자를 위한 기본 퀴즈 8개가 포함되어 있습니다.
-
-예:
+반환값은 `Quiz` 객체의 리스트입니다.
 
 ```python
-Quiz(
-    "Python에서 문자열(string)을 나타내는 자료형은?",
-    ["str", "int", "list", "bool"],
-    1,
-)
+return [
+    Quiz(...),
+    Quiz(...),
+    Quiz(...),
+]
 ```
-
-각 문제는 `Quiz` 클래스의 객체로 생성됩니다.
 
 ---
 
-#### `load_data()`
+# 📌 66. `return []`
+
+```python
+return [
+    Quiz(...),
+    Quiz(...),
+]
+```
+
+리스트를 생성해서 호출한 곳으로 반환합니다.
+
+따라서:
+
+```python
+self.quizzes = self.get_default_quizzes()
+```
+
+라고 하면 기본 퀴즈들이 `self.quizzes`에 저장됩니다.
+
+---
+
+# 📌 67. `load_data()`
 
 ```python
 def load_data(self):
 ```
 
-`Storage` 클래스의 `load()` 메서드를 호출하여 `state.json`의 데이터를 불러옵니다.
+저장된 게임 데이터를 불러옵니다.
 
-저장된 데이터가 없는 경우:
+처음에는:
 
-```text
-기본 퀴즈 생성
-    ↓
-최고 점수 0점 설정
-    ↓
-state.json 저장
+```python
+data = self.storage.load()
 ```
 
-저장된 데이터가 있는 경우:
+을 실행합니다.
 
-```text
-state.json 읽기
-    ↓
-Dictionary 데이터 확인
-    ↓
-Quiz.from_dict() 실행
-    ↓
-Quiz 객체 생성
-    ↓
-quizzes에 저장
-    ↓
-best_score 적용
+그리고 결과에 따라 처리합니다.
+
+### 저장 데이터가 없는 경우
+
+```python
+if data is None:
 ```
 
-이를 통해 프로그램을 다시 실행해도 기존 퀴즈와 최고 점수를 유지할 수 있습니다.
+기본 퀴즈를 사용합니다.
+
+```python
+self.quizzes = self.get_default_quizzes()
+self.best_score = 0
+self.save_data()
+```
+
+### 저장 데이터가 있는 경우
+
+JSON의 데이터를 Quiz 객체로 변환합니다.
 
 ---
 
-#### `save_data()`
+# 📌 68. JSON 딕셔너리를 Quiz 객체로 변환
+
+JSON에서는 다음처럼 저장됩니다.
+
+```json
+{
+    "question": "2 + 2 = ?",
+    "choices": ["1", "2", "3", "4"],
+    "answer": 4
+}
+```
+
+게임에서는 `Quiz` 객체가 필요합니다.
+
+따라서:
+
+```python
+quiz = Quiz(
+    item["question"],
+    item["choices"],
+    item["answer"]
+)
+```
+
+를 사용합니다.
+
+즉:
+
+```text
+JSON 딕셔너리
+      ↓
+Quiz()
+      ↓
+Quiz 객체
+```
+
+로 변환합니다.
+
+---
+
+# 📌 69. 딕셔너리 접근
+
+```python
+item["question"]
+```
+
+딕셔너리에서 특정 키의 값을 가져옵니다.
+
+예:
+
+```python
+item = {
+    "question": "2 + 2 = ?",
+    "answer": 4
+}
+```
+
+이면:
+
+```python
+item["question"]
+```
+
+결과:
+
+```text
+2 + 2 = ?
+```
+
+그리고:
+
+```python
+item["answer"]
+```
+
+결과:
+
+```text
+4
+```
+
+---
+
+# 📌 70. `append()`
+
+```python
+self.quizzes.append(quiz)
+```
+
+리스트의 마지막에 값을 추가합니다.
+
+예:
+
+```python
+numbers = [1, 2, 3]
+
+numbers.append(4)
+```
+
+결과:
+
+```python
+[1, 2, 3, 4]
+```
+
+이 프로그램에서는 새롭게 만든 `Quiz` 객체를 퀴즈 목록에 추가할 때 사용합니다.
+
+---
+
+# 📌 71. `save_data()`
 
 ```python
 def save_data(self):
 ```
 
-현재 게임 데이터를 `Storage` 객체에 전달하여 `state.json`에 저장합니다.
+현재 게임 데이터를 저장합니다.
+
+실제 파일 작업은 직접 하지 않고:
 
 ```python
 self.storage.save(
@@ -515,385 +2305,2001 @@ self.storage.save(
 )
 ```
 
-파일 저장의 실제 처리는 `Storage` 클래스가 담당하기 때문에 `QuizGame`에서는 저장 과정만 요청합니다.
+를 호출합니다.
+
+즉:
+
+```text
+QuizGame
+    │
+    │ save_data()
+    ▼
+Storage
+    │
+    │ save()
+    ▼
+state.json
+```
+
+역할을 분리한 것입니다.
 
 ---
 
-#### `display_menu()`
+# 🖥️ 72. `display_menu()`
 
 ```python
 def display_menu(self):
 ```
 
-프로그램의 메인 메뉴를 출력합니다.
+메인 메뉴를 출력합니다.
 
-메뉴는 다음과 같이 구성됩니다.
+결과는 대략 다음과 같습니다.
 
 ```text
+==================================================
+               퀴즈 게임
+==================================================
 1. 퀴즈 풀기
 2. 퀴즈 추가
 3. 퀴즈 목록
 4. 점수 확인
 5. 종료
+==================================================
 ```
 
 ---
 
-#### `get_number()`
+# 📌 73. 문자열 곱셈
+
+다음 코드가 있습니다.
 
 ```python
-def get_number(self, prompt, min_value, max_value):
+"=" * 50
 ```
 
-숫자 입력이 필요한 상황에서 사용자의 입력을 안전하게 처리하는 공통 메서드입니다.
+문자열도 숫자와 곱셈 연산을 할 수 있습니다.
 
-다음과 같은 입력을 처리합니다.
+결과:
 
-- 정상적인 숫자 입력
-- 빈 입력
-- 숫자가 아닌 입력
-- 허용 범위를 벗어난 숫자
+```text
+==================================================
+```
 
-예를 들어 메뉴에서는:
+즉:
 
 ```python
-choice = self.get_number(
-    "선택: ",
-    1,
-    5,
-)
+"abc" * 3
 ```
 
-를 사용하여 1~5 사이의 숫자만 입력받습니다.
-
-사용자가 `abc`를 입력하면:
+은:
 
 ```text
-⚠️ 숫자만 입력해주세요.
+abcabcabc
 ```
 
-를 출력하고 다시 입력받습니다.
-
-`9`를 입력하면:
-
-```text
-⚠️ 1-5 사이의 숫자를 입력해주세요.
-```
-
-를 출력하고 다시 입력받습니다.
+가 됩니다.
 
 ---
 
-#### `get_non_empty_input()`
+# 🔢 74. `get_number()`
 
 ```python
-def get_non_empty_input(self, prompt):
+def get_number(
+    self,
+    prompt,
+    min_value,
+    max_value
+):
 ```
 
-문제나 선택지처럼 빈 문자열을 허용하지 않는 입력을 처리합니다.
-
-입력값의 앞뒤 공백을 제거한 후 값이 비어 있으면 다시 입력받습니다.
+사용자에게 숫자를 입력받고 올바른 범위인지 검사하는 메서드입니다.
 
 예:
 
-```text
-문제를 입력하세요:
+```python
+self.get_number(
+    "선택: ",
+    1,
+    5
+)
 ```
 
-사용자가 아무것도 입력하지 않고 Enter를 누르면:
+이면:
 
 ```text
-⚠️ 빈 입력은 사용할 수 없습니다.
+1~5
 ```
 
-를 출력합니다.
+사이의 숫자만 허용합니다.
 
 ---
 
-#### `play_quiz()`
+# 📌 75. `input()`
+
+```python
+user_input = input(prompt)
+```
+
+사용자로부터 키보드 입력을 받습니다.
+
+중요한 점은 `input()`의 반환값은 항상 **문자열**이라는 것입니다.
+
+예:
+
+```python
+age = input("나이: ")
+```
+
+사용자가:
+
+```text
+20
+```
+
+을 입력해도:
+
+```python
+age
+```
+
+의 실제 자료형은:
+
+```python
+str
+```
+
+입니다.
+
+---
+
+# 📌 76. `strip()`
+
+```python
+input(prompt).strip()
+```
+
+문자열 앞뒤의 공백을 제거합니다.
+
+예:
+
+```python
+"   hello   ".strip()
+```
+
+결과:
+
+```text
+hello
+```
+
+사용자 입력을 받을 때 유용합니다.
+
+---
+
+# 📌 77. `not`
+
+```python
+if not user_input:
+```
+
+`not`은 논리값을 반대로 바꿉니다.
+
+예:
+
+```python
+user_input = ""
+```
+
+이면 빈 문자열은 거짓처럼 취급되므로:
+
+```python
+not user_input
+```
+
+은 `True`가 됩니다.
+
+따라서 빈 입력을 검사할 수 있습니다.
+
+---
+
+# 📌 78. `int()`
+
+```python
+number = int(user_input)
+```
+
+문자열을 정수로 변환합니다.
+
+예:
+
+```python
+"123"
+```
+
+을:
+
+```python
+123
+```
+
+으로 변환합니다.
+
+`input()`은 문자열을 반환하기 때문에 숫자 계산이나 숫자 비교를 하려면 `int()`가 필요합니다.
+
+---
+
+# 📌 79. `or`
+
+다음 코드:
+
+```python
+if (
+    number < min_value
+    or number > max_value
+):
+```
+
+`or`는 **둘 중 하나라도 참이면 참**입니다.
+
+예:
+
+```python
+number = 10
+
+number < 1
+```
+
+은 `False`지만:
+
+```python
+number > 5
+```
+
+는 `True`입니다.
+
+따라서:
+
+```python
+False or True
+```
+
+는:
+
+```python
+True
+```
+
+가 됩니다.
+
+---
+
+# 📌 80. `while True`
+
+```python
+while True:
+```
+
+조건이 항상 `True`이기 때문에 무한 반복합니다.
+
+예:
+
+```python
+while True:
+    print("반복")
+```
+
+계속 실행됩니다.
+
+따라서 반드시 적절한 시점에:
+
+```python
+break
+```
+
+가 필요합니다.
+
+---
+
+# 📌 81. `break`
+
+```python
+break
+```
+
+반복문을 즉시 종료합니다.
+
+예:
+
+```python
+while True:
+
+    number = input("종료하려면 q: ")
+
+    if number == "q":
+        break
+```
+
+`q`를 입력하면 반복문이 종료됩니다.
+
+이 프로그램에서는 메뉴에서 `5. 종료`를 선택하면 `break`가 실행됩니다.
+
+---
+
+# 🎯 82. `play_quiz()`
 
 ```python
 def play_quiz(self):
 ```
 
-등록된 퀴즈를 출제하고 사용자의 답을 확인하여 점수를 계산합니다.
+실제 퀴즈를 진행하는 핵심 메서드입니다.
 
-주요 처리 과정:
+전체 흐름:
 
 ```text
-퀴즈 존재 여부 확인
-    ↓
+퀴즈가 있는지 확인
+      ↓
 퀴즈 목록 복사
-    ↓
-random.shuffle()로 순서 섞기
-    ↓
-문제 출력
-    ↓
+      ↓
+문제 순서 섞기
+      ↓
+문제 하나씩 출력
+      ↓
 사용자 답 입력
-    ↓
+      ↓
 정답 확인
-    ↓
-정답 개수 계산
-    ↓
+      ↓
 점수 계산
-    ↓
-최고 점수와 비교
-    ↓
-필요한 경우 최고 점수 저장
+      ↓
+최고 점수 갱신
+      ↓
+저장
 ```
 
-원본 퀴즈 목록을 변경하지 않기 위해:
+---
+
+# 📌 83. `copy()`
 
 ```python
 quiz_list = self.quizzes.copy()
 ```
 
-를 사용합니다.
+현재 리스트를 복사합니다.
 
-그 후:
+왜 복사할까요?
+
+다음 코드를 사용하면:
+
+```python
+random.shuffle(self.quizzes)
+```
+
+실제 등록된 퀴즈 목록의 순서가 바뀝니다.
+
+하지만:
+
+```python
+quiz_list = self.quizzes.copy()
+random.shuffle(quiz_list)
+```
+
+를 사용하면 원본:
+
+```python
+self.quizzes
+```
+
+는 그대로 유지됩니다.
+
+---
+
+# 📌 84. `random.shuffle()`
 
 ```python
 random.shuffle(quiz_list)
 ```
 
-을 사용하여 문제 순서를 랜덤하게 변경합니다.
+리스트의 순서를 무작위로 섞습니다.
 
-이를 통해 같은 퀴즈라도 매번 다른 순서로 출제될 수 있습니다.
+예:
 
-점수는 다음과 같이 계산됩니다.
-
-```text
-정답 개수 ÷ 전체 문제 수 × 100
+```python
+[1, 2, 3, 4]
 ```
 
-예를 들어 8문제 중 6문제를 맞히면 75점입니다.
+가:
+
+```python
+[3, 1, 4, 2]
+```
+
+처럼 바뀔 수 있습니다.
 
 ---
 
-#### `add_quiz()`
+# 📌 85. `correct_count`
+
+```python
+correct_count = 0
+```
+
+맞힌 문제의 개수를 저장하는 변수입니다.
+
+정답을 맞히면:
+
+```python
+correct_count += 1
+```
+
+을 실행합니다.
+
+---
+
+# 📌 86. `+=`
+
+```python
+correct_count += 1
+```
+
+다음 코드와 동일합니다.
+
+```python
+correct_count = correct_count + 1
+```
+
+즉, 현재 값에 1을 더합니다.
+
+---
+
+# 📌 87. `for index, quiz in enumerate()`
+
+```python
+for index, quiz in enumerate(
+    quiz_list,
+    start=1
+):
+```
+
+퀴즈를 하나씩 가져오면서 문제 번호도 함께 가져옵니다.
+
+예:
+
+```text
+index = 1
+quiz = 첫 번째 Quiz 객체
+
+index = 2
+quiz = 두 번째 Quiz 객체
+```
+
+---
+
+# 📌 88. `if / else`
+
+정답 확인:
+
+```python
+if quiz.check_answer(user_answer):
+
+    print("정답입니다!")
+
+else:
+
+    print("오답입니다.")
+```
+
+조건이 참이면 `if` 부분을 실행합니다.
+
+조건이 거짓이면 `else` 부분을 실행합니다.
+
+---
+
+# 📌 89. 점수 계산
+
+```python
+score = int(
+    (correct_count / total_count) * 100
+)
+```
+
+예를 들어:
+
+```text
+총 8문제
+정답 6문제
+```
+
+이면:
+
+```text
+6 / 8 × 100
+= 75
+```
+
+따라서:
+
+```python
+score = 75
+```
+
+가 됩니다.
+
+---
+
+# 📌 90. `/`
+
+```python
+correct_count / total_count
+```
+
+나눗셈 연산입니다.
+
+예:
+
+```python
+6 / 8
+```
+
+결과:
+
+```python
+0.75
+```
+
+---
+
+# 📌 91. `int()`
+
+점수 계산 결과가 소수일 수도 있기 때문에:
+
+```python
+int(...)
+```
+
+로 정수로 변환합니다.
+
+예:
+
+```python
+int(87.5)
+```
+
+결과:
+
+```python
+87
+```
+
+소수점 이하를 버립니다.
+
+---
+
+# 🏆 92. 최고 점수 갱신
+
+```python
+if score > self.best_score:
+```
+
+현재 점수가 기존 최고 점수보다 높은지 확인합니다.
+
+예:
+
+```text
+현재 점수: 90
+최고 점수: 80
+```
+
+이면:
+
+```python
+90 > 80
+```
+
+이므로 새로운 최고 점수가 됩니다.
+
+```python
+self.best_score = score
+```
+
+---
+
+# ➕ 93. `add_quiz()`
 
 ```python
 def add_quiz(self):
 ```
 
-사용자로부터 새로운 퀴즈 정보를 입력받아 `Quiz` 객체를 생성하고 등록합니다.
+사용자가 직접 새로운 퀴즈를 추가하는 메서드입니다.
 
-입력 과정:
+입력 순서는:
 
 ```text
-문제 입력
-    ↓
-선택지 1 입력
-    ↓
-선택지 2 입력
-    ↓
-선택지 3 입력
-    ↓
-선택지 4 입력
-    ↓
-정답 번호 입력
-    ↓
-Quiz 객체 생성
-    ↓
-quizzes 리스트에 추가
-    ↓
-state.json 저장
+문제
+선택지 1
+선택지 2
+선택지 3
+선택지 4
+정답 번호
 ```
 
-정답 번호는 `get_number()`를 사용하여 1~4 범위만 허용합니다.
+입니다.
 
 ---
 
-#### `show_quizzes()`
+# 📌 94. 빈 리스트
+
+```python
+choices = []
+```
+
+선택지를 저장할 빈 리스트를 만듭니다.
+
+이후:
+
+```python
+choices.append(choice)
+```
+
+를 사용하여 하나씩 추가합니다.
+
+결과:
+
+```python
+[
+    "선택지 1",
+    "선택지 2",
+    "선택지 3",
+    "선택지 4"
+]
+```
+
+---
+
+# 📌 95. `range()`
+
+```python
+for index in range(1, 5):
+```
+
+`range()`는 일정한 숫자 범위를 만들어줍니다.
+
+```python
+range(1, 5)
+```
+
+은:
+
+```text
+1
+2
+3
+4
+```
+
+를 의미합니다.
+
+주의할 점은 마지막 숫자 `5`는 포함되지 않는다는 것입니다.
+
+즉:
+
+```python
+range(1, 5)
+```
+
+은:
+
+```text
+1 이상 5 미만
+```
+
+입니다.
+
+---
+
+# 📋 96. `show_quizzes()`
 
 ```python
 def show_quizzes(self):
 ```
 
-현재 등록된 모든 퀴즈의 목록을 출력합니다.
-
-각 퀴즈의 문제와 선택지를 함께 보여줍니다.
+현재 등록된 모든 퀴즈를 화면에 보여줍니다.
 
 예:
 
 ```text
-[1] Python에서 문자열을 나타내는 자료형은?
+==================================================
+📋 등록된 퀴즈 목록 (총 2개)
+==================================================
+
+[1] Python에서 문자열 자료형은?
     1. str
     2. int
     3. list
     4. bool
-```
 
-등록된 퀴즈가 없는 경우에는 별도의 안내 메시지를 출력합니다.
+[2] Python에서 리스트를 만드는 방법은?
+    1. []
+    2. {}
+    3. ()
+    4. <>
+```
 
 ---
 
-#### `show_score()`
+# 🏆 97. `show_score()`
 
 ```python
 def show_score(self):
 ```
 
-현재 저장된 최고 점수를 화면에 출력합니다.
-
-최고 점수가 0점인 경우에는:
+현재 저장된 최고 점수를 보여줍니다.
 
 ```text
-아직 퀴즈를 풀지 않았습니다.
+==================================================
+🏆 최고 점수
+==================================================
+최고 점수: 90점
 ```
-
-라는 메시지를 출력합니다.
-
-최고 점수가 있는 경우에는:
-
-```text
-최고 점수: 80점
-```
-
-과 같이 표시합니다.
 
 ---
 
-#### `run()`
+# 🎮 98. `run()`
 
 ```python
 def run(self):
 ```
 
-게임의 메인 실행 루프입니다.
+게임의 메인 루프입니다.
 
-메뉴를 반복해서 출력하고 사용자가 선택한 기능을 실행합니다.
+메뉴를 계속 보여주고 사용자의 선택에 따라 기능을 실행합니다.
 
-전체 흐름:
+전체 구조:
 
 ```text
-메뉴 출력
-    ↓
-사용자 메뉴 선택
-    ↓
-┌───────────────────────┐
-│ 1. 퀴즈 풀기           │
-│ 2. 퀴즈 추가           │
-│ 3. 퀴즈 목록           │
-│ 4. 점수 확인           │
-│ 5. 종료                │
-└───────────────────────┘
-    ↓
-선택한 기능 실행
-    ↓
-다시 메뉴 출력
+while True
+   │
+   ├── 메뉴 출력
+   │
+   ├── 1 → 퀴즈 풀기
+   │
+   ├── 2 → 퀴즈 추가
+   │
+   ├── 3 → 퀴즈 목록
+   │
+   ├── 4 → 점수 확인
+   │
+   └── 5 → 저장 후 종료
 ```
-
-5번 종료를 선택하면 현재 데이터를 저장하고 프로그램을 종료합니다.
 
 ---
 
-### 4. `main()` 함수
+# 📌 99. `elif`
+
+```python
+if choice == 1:
+    ...
+
+elif choice == 2:
+    ...
+
+elif choice == 3:
+    ...
+```
+
+`elif`는 **else if**의 줄임말입니다.
+
+앞의 `if`가 거짓일 때 다른 조건을 검사합니다.
+
+이 프로그램에서는 메뉴 선택을 처리할 때 사용합니다.
+
+---
+
+# 🛑 100. 메뉴 종료
+
+사용자가:
+
+```text
+5
+```
+
+를 입력하면:
+
+```python
+elif choice == 5:
+```
+
+가 실행됩니다.
+
+그리고:
+
+```python
+self.save_data()
+```
+
+로 데이터를 저장한 후:
+
+```python
+break
+```
+
+로 메인 반복문을 종료합니다.
+
+---
+
+# 🚀 101. `main()` 함수
 
 ```python
 def main():
 ```
 
-프로그램을 시작하는 진입점 역할을 합니다.
+프로그램의 시작점 역할을 하는 함수입니다.
 
-먼저 현재 Python 파일의 위치를 기준으로 `state.json`의 경로를 생성합니다.
+주요 역할:
 
-```python
-base_dir = Path(__file__).resolve().parent
-state_file = base_dir / "state.json"
+```text
+프로그램 위치 확인
+      ↓
+state.json 경로 생성
+      ↓
+Storage 생성
+      ↓
+QuizGame 생성
+      ↓
+게임 실행
+      ↓
+예외 발생 시 저장 후 종료
 ```
-
-그 다음 `Storage`와 `QuizGame` 객체를 생성하고 게임을 실행합니다.
-
-```python
-storage = Storage(state_file)
-game = QuizGame(storage)
-
-game.run()
-```
-
-이렇게 하면 `state.json`이 실행 위치에 따라 달라지는 것을 방지하고 프로젝트 루트의 `state.json`을 사용하게 됩니다.
 
 ---
 
-### 5. 프로그램 실행 조건
+# 📌 102. `__file__`
+
+```python
+Path(__file__)
+```
+
+`__file__`은 현재 실행 중인 Python 파일의 경로를 나타냅니다.
+
+예:
+
+```text
+/home/user/quiz/main.py
+```
+
+---
+
+# 📌 103. `resolve()`
+
+```python
+Path(__file__).resolve()
+```
+
+파일의 경로를 절대 경로 형태로 가져옵니다.
+
+예:
+
+```text
+/home/user/quiz/main.py
+```
+
+---
+
+# 📌 104. `parent`
+
+```python
+Path(__file__).resolve().parent
+```
+
+현재 파일이 들어 있는 폴더를 가져옵니다.
+
+예:
+
+```text
+/home/user/quiz/main.py
+```
+
+의 `parent`는:
+
+```text
+/home/user/quiz
+```
+
+입니다.
+
+---
+
+# 📌 105. `Path / "파일명"`
+
+다음과 같은 코드가 있습니다.
+
+```python
+state_file = base_dir / "state.json"
+```
+
+`Path` 객체에서는 `/` 연산자를 이용해 경로를 쉽게 연결할 수 있습니다.
+
+예:
+
+```text
+base_dir
+   +
+state.json
+```
+
+→
+
+```text
+/home/user/quiz/state.json
+```
+
+이 됩니다.
+
+---
+
+# 🛡️ 106. `KeyboardInterrupt`
+
+```python
+except KeyboardInterrupt:
+```
+
+사용자가 `Ctrl+C`를 누르면 발생하는 예외입니다.
+
+일반적으로 프로그램을 강제로 종료하려는 상황입니다.
+
+이 프로그램에서는 갑자기 종료하는 대신:
+
+```text
+Ctrl+C
+  ↓
+현재 데이터 저장
+  ↓
+안전하게 종료
+```
+
+하도록 만들었습니다.
+
+---
+
+# 📌 107. `EOFError`
+
+```python
+except EOFError:
+```
+
+입력 스트림이 종료되었을 때 발생할 수 있는 예외입니다.
+
+터미널 환경에서는 `Ctrl+D` 등의 상황에서 발생할 수 있습니다.
+
+이 프로그램에서는 `EOFError`가 발생해도:
+
+```text
+현재 데이터 저장
+      ↓
+안전하게 종료
+```
+
+합니다.
+
+---
+
+# 📌 108. 예외 처리 전체 구조
+
+`main()`의 핵심 구조는 다음과 같습니다.
+
+```python
+try:
+    game.run()
+
+except KeyboardInterrupt:
+    game.save_data()
+
+except EOFError:
+    game.save_data()
+```
+
+즉:
+
+```text
+게임 실행
+   │
+   ├── 정상 종료
+   │
+   ├── Ctrl+C
+   │      ↓
+   │   데이터 저장
+   │
+   └── EOFError
+          ↓
+       데이터 저장
+```
+
+---
+
+# 📌 109. `if __name__ == "__main__"`
+
+프로그램 마지막에 다음 코드가 있습니다.
 
 ```python
 if __name__ == "__main__":
     main()
 ```
 
-현재 파일이 직접 실행된 경우에만 `main()` 함수를 호출합니다.
+Python에서 매우 자주 사용하는 패턴입니다.
 
-따라서 `main.py`를 직접 실행하면 프로그램이 시작됩니다.
+현재 파일을 직접 실행하면:
+
+```python
+__name__ == "__main__"
+```
+
+이 됩니다.
+
+따라서:
+
+```python
+main()
+```
+
+이 실행됩니다.
+
+---
+
+# 📌 110. 직접 실행과 `import`의 차이
+
+예를 들어 파일 이름이:
+
+```text
+main.py
+```
+
+라고 합시다.
+
+터미널에서:
 
 ```bash
 python main.py
 ```
 
+으로 직접 실행하면:
+
+```python
+__name__ == "__main__"
+```
+
+입니다.
+
+따라서:
+
+```python
+main()
+```
+
+이 실행됩니다.
+
+하지만 다른 파일에서:
+
+```python
+import main
+```
+
+하면:
+
+```python
+__name__
+```
+
+은 `"main"`과 같은 모듈 이름이 됩니다.
+
+따라서:
+
+```python
+if __name__ == "__main__":
+```
+
+조건이 거짓이 되어 `main()`이 자동 실행되지 않습니다.
+
+이 구조 덕분에 이 파일을 다른 Python 파일에서 모듈처럼 가져와 사용할 수도 있습니다.
+
 ---
 
-## 클래스 간 관계
+# 🧩 111. 프로그램 전체 실행 과정
 
-각 클래스는 서로 다른 역할을 담당하도록 구성했습니다.
+프로그램을 실행하면 다음과 같은 과정이 진행됩니다.
+
+```text
+python main.py
+      │
+      ▼
+main()
+      │
+      ▼
+현재 파일 위치 확인
+      │
+      ▼
+state.json 경로 생성
+      │
+      ▼
+Storage 객체 생성
+      │
+      ▼
+QuizGame 객체 생성
+      │
+      ▼
+load_data()
+      │
+      ├── state.json 있음
+      │       ↓
+      │     데이터 읽기
+      │
+      └── state.json 없음
+              ↓
+          백업 확인
+              ↓
+          백업도 없음
+              ↓
+          기본 퀴즈 생성
+      │
+      ▼
+game.run()
+      │
+      ▼
+메뉴 출력
+      │
+      ├── 1. 퀴즈 풀기
+      │
+      ├── 2. 퀴즈 추가
+      │
+      ├── 3. 퀴즈 목록
+      │
+      ├── 4. 점수 확인
+      │
+      └── 5. 종료
+```
+
+---
+
+# 💾 112. `state.json`의 역할
+
+프로그램을 종료하면 일반적으로 Python 프로그램의 변수는 사라집니다.
+
+예:
+
+```python
+self.best_score = 90
+```
+
+프로그램이 종료되면 메모리에서 사라집니다.
+
+그래서 파일에 저장해야 합니다.
+
+이 프로그램에서는:
+
+```text
+state.json
+```
+
+파일에 데이터를 저장합니다.
+
+예:
+
+```json
+{
+    "quizzes": [
+        {
+            "question": "Python에서 문자열 자료형은?",
+            "choices": [
+                "str",
+                "int",
+                "list",
+                "bool"
+            ],
+            "answer": 1
+        }
+    ],
+    "best_score": 90
+}
+```
+
+프로그램을 다시 실행하면 이 데이터를 읽어서 다시 객체로 만듭니다.
+
+---
+
+# 🔄 113. 저장과 복원의 구조
+
+저장할 때:
+
+```text
+Quiz 객체
+   ↓
+to_dict()
+   ↓
+Python 딕셔너리
+   ↓
+json.dump()
+   ↓
+state.json
+```
+
+불러올 때:
+
+```text
+state.json
+   ↓
+json.load()
+   ↓
+Python 딕셔너리
+   ↓
+Quiz()
+   ↓
+Quiz 객체
+```
+
+즉, 저장과 불러오기는 서로 반대 방향으로 동작합니다.
+
+---
+
+# 🛡️ 114. 백업 시스템
+
+이 프로그램은 데이터를 저장하기 전에 기존 `state.json`을 백업합니다.
+
+예:
+
+```text
+state.json
+state.json.bak
+state.json.20260816_101500.bak
+state.json.20260816_102000.bak
+state.json.20260816_103000.bak
+```
+
+이렇게 여러 개의 백업을 남길 수 있습니다.
+
+---
+
+# 🔧 115. 백업 복구 과정
+
+만약 `state.json`이 손상되었다면:
+
+```text
+state.json
+     ↓
+JSON 읽기 실패
+     ↓
+백업 파일 검색
+     ↓
+최신 백업 확인
+     ↓
+정상적인 JSON인가?
+     │
+   ┌─┴─┐
+   │   │
+  YES  NO
+   │   │
+   ▼   ▼
+복구   다음 백업 확인
+```
+
+따라서 최신 백업이 손상되어 있어도 다음 백업을 확인할 수 있습니다.
+
+---
+
+# 🧱 116. 객체지향 관점에서 보기
+
+이 프로그램의 가장 중요한 구조는 **역할 분리**입니다.
+
+## `Quiz`
+
+```text
+"퀴즈 하나를 어떻게 표현할 것인가?"
+```
+
+를 담당합니다.
+
+---
+
+## `Storage`
+
+```text
+"데이터를 어떻게 저장하고 불러올 것인가?"
+```
+
+를 담당합니다.
+
+---
+
+## `QuizGame`
+
+```text
+"게임을 어떻게 진행할 것인가?"
+```
+
+를 담당합니다.
+
+---
+
+## `main()`
+
+```text
+"프로그램을 어떻게 시작할 것인가?"
+```
+
+를 담당합니다.
+
+---
+
+# 📊 117. 클래스 간 관계
 
 ```text
                     ┌───────────────┐
-                    │    QuizGame   │
-                    │  게임 전체 관리 │
+                    │     Quiz      │
+                    │───────────────│
+                    │ question      │
+                    │ choices       │
+                    │ answer        │
+                    └───────▲───────┘
+                            │
+                            │ 여러 개 사용
+                            │
+                    ┌───────┴───────┐
+                    │   QuizGame    │
+                    │───────────────│
+                    │ quizzes       │
+                    │ best_score    │
+                    │ play_quiz()   │
+                    │ add_quiz()    │
+                    │ run()         │
                     └───────┬───────┘
                             │
-                 ┌──────────┴──────────┐
-                 │                     │
-                 ▼                     ▼
-          ┌─────────────┐       ┌─────────────┐
-          │    Quiz     │       │   Storage   │
-          │ 퀴즈 데이터 관리 │       │ JSON 파일 관리 │
-          └─────────────┘       └─────────────┘
-                 │                     │
-                 │                     │
-                 ▼                     ▼
-           문제/선택지/정답          state.json
+                            │ 사용
+                            ▼
+                    ┌───────────────┐
+                    │    Storage    │
+                    │───────────────│
+                    │ load()        │
+                    │ save()        │
+                    │ backup        │
+                    │ restore       │
+                    └───────┬───────┘
+                            │
+                            ▼
+                      ┌───────────┐
+                      │state.json │
+                      └───────────┘
 ```
-
-### 역할 분리
-
-| 클래스 | 주요 책임 |
-|---|---|
-| `Quiz` | 하나의 퀴즈 데이터와 정답 확인 |
-| `Storage` | JSON 파일 저장 및 불러오기 |
-| `QuizGame` | 메뉴, 게임 진행, 퀴즈 추가, 목록, 점수 관리 |
-
-이와 같이 역할을 분리함으로써 하나의 클래스에 모든 기능을 작성하지 않고 각 클래스가 자신의 역할에 집중하도록 설계했습니다.
 
 ---
 
-## 프로그램의 전체 실행 흐름
+# 📚 118. 사용된 Python 문법 정리
+
+이 프로그램에 사용된 주요 Python 문법을 정리하면 다음과 같습니다.
+
+| 문법 | 의미 |
+|---|---|
+| `import` | 모듈 가져오기 |
+| `from ... import ...` | 특정 클래스/함수 가져오기 |
+| `class` | 클래스 정의 |
+| `def` | 함수/메서드 정의 |
+| `self` | 현재 객체 자신 |
+| `__init__` | 객체 초기화 메서드 |
+| `return` | 결과 반환 |
+| `if` | 조건문 |
+| `elif` | 추가 조건 |
+| `else` | 그 외 조건 |
+| `for` | 반복문 |
+| `while` | 조건 반복문 |
+| `break` | 반복문 종료 |
+| `continue` | 현재 반복 건너뛰기 |
+| `try` | 예외가 발생할 수 있는 코드 실행 |
+| `except` | 예외 처리 |
+| `raise` | 직접 예외 발생 |
+| `is` | 객체 동일성 비교 |
+| `is not` | 객체 동일성이 아님 |
+| `==` | 값이 같은지 비교 |
+| `>` | 큰지 비교 |
+| `<` | 작은지 비교 |
+| `or` | 논리 OR |
+| `not` | 논리 NOT |
+| `+=` | 값에 더하기 |
+| `[]` | 리스트/딕셔너리 접근 |
+| `{}` | 딕셔너리 |
+| `None` | 값이 없음을 나타냄 |
+| `lambda` | 익명 함수 |
+| `enumerate()` | 순서와 값을 함께 반복 |
+| `range()` | 숫자 범위 생성 |
+| `isinstance()` | 자료형 확인 |
+| `sorted()` | 정렬 |
+| `append()` | 리스트에 하나 추가 |
+| `extend()` | 리스트에 여러 개 추가 |
+| `copy()` | 리스트 복사 |
+| `strip()` | 문자열 앞뒤 공백 제거 |
+
+---
+
+# 🧠 119. 핵심 개념 한 번에 정리
+
+이 프로젝트를 공부할 때는 다음 순서로 이해하면 좋습니다.
 
 ```text
-main()
-  ↓
-Storage 객체 생성
-  ↓
-QuizGame 객체 생성
-  ↓
-state.json 불러오기
-  ↓
-기본 데이터 또는 저장 데이터 설정
-  ↓
-run()
-  ↓
-메뉴 출력
-  ↓
-사용자 선택
-  ├── 1 → play_quiz()
-  ├── 2 → add_quiz()
-  ├── 3 → show_quizzes()
-  ├── 4 → show_score()
-  └── 5 → save_data() 후 종료
+① 변수
+   ↓
+② 리스트 / 딕셔너리
+   ↓
+③ if / elif / else
+   ↓
+④ for / while
+   ↓
+⑤ 함수
+   ↓
+⑥ 클래스
+   ↓
+⑦ 객체
+   ↓
+⑧ 메서드
+   ↓
+⑨ 예외 처리
+   ↓
+⑩ 파일 입출력
+   ↓
+⑪ JSON
+   ↓
+⑫ 클래스 간 역할 분리
+   ↓
+⑬ 백업 / 복구
 ```
 
-이 구조를 통해 **퀴즈 데이터 관리(`Quiz`)**, **파일 입출력(`Storage`)**, **게임 진행(`QuizGame`)**의 책임을 분리하고 객체 지향적인 구조로 프로그램을 구현했습니다.
+---
+
+# 🎯 120. 이 프로젝트에서 배울 수 있는 핵심
+
+## ① 클래스
+
+```python
+class Quiz:
+```
+
+데이터와 기능을 하나의 객체로 묶는 방법을 배울 수 있습니다.
+
+---
+
+## ② 객체
+
+```python
+quiz = Quiz(...)
+```
+
+클래스를 이용하여 실제 객체를 생성합니다.
+
+---
+
+## ③ 메서드
+
+```python
+quiz.display()
+quiz.check_answer()
+```
+
+객체가 수행할 수 있는 동작을 정의합니다.
+
+---
+
+## ④ 리스트
+
+```python
+self.quizzes = []
+```
+
+여러 개의 데이터를 저장합니다.
+
+---
+
+## ⑤ 딕셔너리
+
+```python
+{
+    "question": "...",
+    "choices": [...],
+    "answer": 1
+}
+```
+
+키와 값의 형태로 데이터를 관리합니다.
+
+---
+
+## ⑥ 반복문
+
+```python
+for quiz in quiz_list:
+```
+
+여러 개의 퀴즈를 하나씩 처리합니다.
+
+---
+
+## ⑦ 조건문
+
+```python
+if quiz.check_answer(user_answer):
+```
+
+정답과 오답을 판단합니다.
+
+---
+
+## ⑧ 예외 처리
+
+```python
+try:
+    ...
+except ValueError:
+    ...
+```
+
+잘못된 사용자 입력이나 파일 오류에 대응합니다.
+
+---
+
+## ⑨ JSON
+
+```python
+json.load()
+json.dump()
+```
+
+프로그램의 데이터를 파일에 저장하고 다시 불러옵니다.
+
+---
+
+## ⑩ 파일 관리
+
+```python
+Path(...)
+```
+
+파일 경로를 관리합니다.
+
+---
+
+## ⑪ 백업
+
+```python
+shutil.copy2(...)
+```
+
+기존 데이터를 백업합니다.
+
+---
+
+## ⑫ 복구
+
+```python
+_restore_from_backup()
+```
+
+손상된 데이터를 백업으로 복구합니다.
+
+---
+
+# 📝 121. 프로그램 실행 예시
+
+프로그램을 실행하면:
+
+```text
+==================================================
+               퀴즈 게임
+==================================================
+1. 퀴즈 풀기
+2. 퀴즈 추가
+3. 퀴즈 목록
+4. 점수 확인
+5. 종료
+==================================================
+선택:
+```
+
+예를 들어 `1`을 입력하면:
+
+```text
+==================================================
+📝 퀴즈를 시작합니다! (총 8문제)
+==================================================
+
+--------------------------------------------------
+
+[문제 1]
+
+Python에서 함수를 정의할 때 사용하는 키워드는?
+
+1. func
+2. function
+3. def
+4. method
+
+정답 입력 (1-4):
+```
+
+정답을 입력하면:
+
+```text
+✅ 정답입니다!
+```
+
+또는:
+
+```text
+❌ 오답입니다. 정답은 3번입니다.
+```
+
+모든 문제를 풀면:
+
+```text
+==================================================
+🏆 결과: 8문제 중 7문제 정답! (87점)
+==================================================
+```
+
+기존 최고 점수보다 높으면:
+
+```text
+🎉 새로운 최고 점수입니다!
+```
+
+가 출력됩니다.
+
+---
+
+# 📁 122. 프로젝트 파일 구조
+
+권장 프로젝트 구조는 다음과 같습니다.
+
+```text
+quiz-game/
+│
+├── main.py
+│
+├── state.json
+│
+├── state.json.bak
+│
+├── state.json.20260816_101500.bak
+│
+├── state.json.20260816_102000.bak
+│
+└── README.md
+```
+
+각 파일의 역할:
+
+| 파일 | 역할 |
+|---|---|
+| `main.py` | Python 퀴즈 게임 프로그램 |
+| `state.json` | 현재 퀴즈와 최고 점수 |
+| `state.json.bak` | 최근 백업 |
+| `state.json.*.bak` | 시간별 백업 |
+| `README.md` | 프로젝트 설명 |
+
+---
+
+# ▶️ 123. 실행 방법
+
+Python이 설치되어 있다면 터미널에서 프로젝트 폴더로 이동한 뒤:
+
+~~~~bash
+python main.py
+~~~~
+
+또는 운영체제 환경에 따라:
+
+~~~~bash
+python3 main.py
+~~~~
+
+로 실행할 수 있습니다.
+
+---
+
+# 🧪 124. 프로그램 사용 방법
+
+## 1. 퀴즈 풀기
+
+메뉴에서:
+
+```text
+1
+```
+
+을 선택합니다.
+
+등록된 퀴즈가 무작위 순서로 출제됩니다.
+
+---
+
+## 2. 새로운 퀴즈 추가
+
+메뉴에서:
+
+```text
+2
+```
+
+를 선택합니다.
+
+다음 순서로 입력합니다.
+
+```text
+문제
+선택지 1
+선택지 2
+선택지 3
+선택지 4
+정답 번호
+```
+
+입력이 완료되면 `state.json`에 저장됩니다.
+
+---
+
+## 3. 퀴즈 목록
+
+메뉴에서:
+
+```text
+3
+```
+
+을 선택합니다.
+
+현재 등록된 모든 퀴즈를 확인할 수 있습니다.
+
+---
+
+## 4. 최고 점수
+
+메뉴에서:
+
+```text
+4
+```
+
+를 선택합니다.
+
+현재까지 기록된 최고 점수를 확인할 수 있습니다.
+
+---
+
+## 5. 종료
+
+메뉴에서:
+
+```text
+5
+```
+
+를 선택하면 데이터를 저장하고 프로그램을 종료합니다.
+
+---
+
+# 🛡️ 125. 잘못된 입력 처리
+
+이 프로그램은 사용자가 잘못된 값을 입력해도 프로그램이 바로 종료되지 않도록 만들어져 있습니다.
+
+예를 들어 메뉴에서:
+
+```text
+abc
+```
+
+를 입력하면:
+
+```text
+⚠️ 숫자만 입력해주세요.
+```
+
+가 출력됩니다.
+
+범위를 벗어난 숫자를 입력하면:
+
+```text
+10
+```
+
+다음과 같이 안내합니다.
+
+```text
+⚠️ 1-5 사이의 숫자를 입력해주세요.
+```
+
+빈 입력도 처리합니다.
+
+```text
+⚠️ 입력값이 없습니다. 숫자를 입력해주세요.
+```
+
+---
+
+# 🔐 126. 데이터 안정성
+
+이 프로그램은 단순히 JSON 파일에 저장하는 것에서 끝나지 않습니다.
+
+다음과 같은 상황까지 고려합니다.
+
+```text
+① state.json이 없음
+        ↓
+   백업 확인
+
+② state.json이 손상됨
+        ↓
+   백업 확인
+
+③ 최신 백업도 손상됨
+        ↓
+   다음 백업 확인
+
+④ 백업도 없음
+        ↓
+   기본 데이터 사용
+
+⑤ Ctrl+C
+        ↓
+   데이터 저장 후 종료
+
+⑥ EOFError
+        ↓
+   데이터 저장 후 종료
+```
+
+따라서 단순한 콘솔 게임이지만 파일 데이터의 안정성까지 고려한 구조입니다.
+
+---
+
+# 🧩 127. 이 코드에서 특히 중요한 Python 개념
+
+이 프로젝트를 통해 다음 네 가지 개념을 집중적으로 공부하면 좋습니다.
+
+## 1. 객체지향 프로그래밍
+
+```python
+class Quiz:
+class Storage:
+class QuizGame:
+```
+
+각 객체가 자신의 책임을 가지도록 구성했습니다.
+
+---
+
+## 2. 데이터 직렬화
+
+```text
+Quiz 객체
+    ↓
+dict
+    ↓
+JSON
+```
+
+객체 데이터를 파일에 저장할 수 있는 형태로 변환하는 과정입니다.
+
+---
+
+## 3. 예외 처리
+
+```python
+try:
+    ...
+except:
+    ...
+```
+
+프로그램 실행 중 발생할 수 있는 문제에 대응합니다.
+
+---
+
+## 4. 파일 영속성
+
+프로그램이 종료되어도:
+
+```text
+state.json
+```
+
+에 데이터가 남기 때문에 다음 실행에서도 이전 상태를 복원할 수 있습니다.
+
+이를 **영속성(Persistence)**이라고 합니다.
+
+---
+
+# 📌 128. 핵심 메서드 요약
+
+## `Quiz`
+
+| 메서드 | 역할 |
+|---|---|
+| `__init__()` | 퀴즈 객체 초기화 |
+| `display()` | 문제와 선택지 출력 |
+| `check_answer()` | 정답 여부 확인 |
+| `to_dict()` | Quiz 객체를 딕셔너리로 변환 |
+
+---
+
+## `Storage`
+
+| 메서드 | 역할 |
+|---|---|
+| `__init__()` | 파일 경로 초기화 |
+| `_load_file()` | JSON 파일 하나 읽기 |
+| `_get_backup_files()` | 백업 목록 가져오기 |
+| `_restore_from_backup()` | 백업으로 데이터 복구 |
+| `load()` | 저장 데이터 불러오기 |
+| `save()` | 데이터 저장 및 백업 |
+
+---
+
+## `QuizGame`
+
+| 메서드 | 역할 |
+|---|---|
+| `__init__()` | 게임 초기화 |
+| `get_default_quizzes()` | 기본 퀴즈 생성 |
+| `load_data()` | 저장 데이터 불러오기 |
+| `save_data()` | 게임 데이터 저장 |
+| `display_menu()` | 메뉴 출력 |
+| `get_number()` | 숫자 입력 및 검증 |
+| `get_non_empty_input()` | 빈 문자열이 아닌 입력 받기 |
+| `play_quiz()` | 퀴즈 진행 |
+| `add_quiz()` | 새로운 퀴즈 추가 |
+| `show_quizzes()` | 퀴즈 목록 출력 |
+| `show_score()` | 최고 점수 출력 |
+| `run()` | 메인 게임 루프 |
+
+---
+
+# 🎓 129. 전체 코드에서 기억해야 할 핵심
+
+이 프로그램을 이해할 때 모든 코드를 한 번에 외울 필요는 없습니다.
+
+다음 흐름을 먼저 이해하는 것이 중요합니다.
+
+```text
+Quiz
+│
+├── 문제를 저장한다.
+├── 선택지를 저장한다.
+├── 정답을 저장한다.
+├── 문제를 출력한다.
+└── 정답을 확인한다.
+
+
+Storage
+│
+├── JSON을 읽는다.
+├── JSON을 저장한다.
+├── 기존 데이터를 백업한다.
+└── 문제가 생기면 백업에서 복구한다.
+
+
+QuizGame
+│
+├── Quiz를 여러 개 관리한다.
+├── Storage를 사용한다.
+├── 사용자의 입력을 받는다.
+├── 퀴즈를 진행한다.
+├── 점수를 계산한다.
+└── 메뉴를 관리한다.
+
+
+main()
+│
+├── Storage 생성
+├── QuizGame 생성
+└── 게임 실행
+```
+
+결국 이 프로그램의 핵심 구조는 다음 한 문장으로 정리할 수 있습니다.
+
+> **`Quiz`는 문제를 관리하고, `Storage`는 데이터를 관리하며, `QuizGame`은 게임을 관리하고, `main()`은 프로그램을 시작한다.**
+
+이렇게 각 클래스와 함수가 자신의 역할을 나누어 담당하기 때문에 코드가 길어져도 전체 구조를 이해하고 유지보수하기 쉬워집니다.
 
 
 ## Git
